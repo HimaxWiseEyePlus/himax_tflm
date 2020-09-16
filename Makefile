@@ -279,18 +279,22 @@ clean:
 	-@$(RM) *.elf
 	-@$(RM) *.map
 	
-download:
+download: $(MODEL_LOC)
 	@echo 'downloading'
 	@$(DL) $(LIB_LINK)  -o $(LIB_NAME)
 	@$(DL) $(MODEL_LINK)  -o $(MODEL_NAME)
 	@$(DL) $(SDK_LINK)  -o $(SDK_NAME)
-	@$(UNZIP) $(LIB_NAME) -d $(LIB_LOC)
-	@$(UNZIP) $(MODEL_NAME) -d $(MODEL_LOC)
-	@$(UNZIP) $(SDK_NAME) -d $(SDK_LOC)  
+	@$(UNZIP) -o $(LIB_NAME) -d $(LIB_LOC)
+	@$(UNZIP) -o $(MODEL_NAME) -d $(MODEL_LOC)
+	@$(UNZIP) -o $(SDK_NAME) -d $(SDK_LOC)  
 	@$(RM) $(LIB_NAME)
 	@$(RM) $(MODEL_NAME)
 	@$(RM) $(SDK_NAME)
 	
+$(MODEL_LOC):
+	@echo "Folder $(MODEL_LOC) does not exist"
+	mkdir -p $@
+
 flash:
 ifdef example
 	@export PATH=$(shell pwd)/$(GEN_TOOL_DIR)/:$$PATH && \
