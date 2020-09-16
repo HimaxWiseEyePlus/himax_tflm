@@ -292,8 +292,7 @@ download: $(MODEL_LOC)
 	@$(RM) $(SDK_NAME)
 	
 $(MODEL_LOC):
-	@echo "Folder $(MODEL_LOC) does not exist"
-	mkdir -p $@
+	@mkdir -p $@
 
 flash:
 ifdef example
