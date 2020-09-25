@@ -13,11 +13,11 @@ LIB_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/thrid_party_lib_v01.zip
 LIB_LOC = third_party/
 LIB_NAME = lib.zip
 
-MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v01.zip
+MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v02.zip
 MODEL_LOC = tensorflow/lite/micro/tools/make/downloads/
 MODEL_NAME = model.zip
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v04.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v05.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
@@ -151,6 +151,19 @@ tensorflow/lite/experimental/microfrontend/lib/window_util.c \
 tensorflow/lite/micro/tools/make/downloads/kissfft/kiss_fft.c \
 tensorflow/lite/micro/tools/make/downloads/kissfft/tools/kiss_fftr.c
 
+
+HW_SRCS := \
+tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.cc \
+tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.cc \
+tensorflow/lite/micro/kernels/arc_mli/mli_slicers.cc \
+tensorflow/lite/micro/examples/handwriting/himax_we1_evb/detection_responder.cc \
+tensorflow/lite/micro/examples/handwriting/himax_we1_evb/image_provider.cc \
+tensorflow/lite/micro/examples/handwriting/main.cc \
+tensorflow/lite/micro/examples/handwriting/main_functions.cc \
+tensorflow/lite/micro/examples/handwriting/model_settings.cc \
+tensorflow/lite/micro/tools/make/downloads/handwriting/model_data.cc
+
+
 OBJS := \
 $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(SRCS)))
 
@@ -163,6 +176,8 @@ $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(MW_SRCS)))
 MS_OBJS := \
 $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(MS_SRCS)))
 
+HW_OBJS := \
+$(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(HW_SRCS)))
 #=============================================================
 # Applications settings
 #=============================================================
@@ -264,6 +279,9 @@ micro_speech: micro_speech.elf
 magic_wand: MAP_NAME = magic_wand
 magic_wand: magic_wand.elf 
 
+handwriting: MAP_NAME = handwriting
+handwriting: handwriting.elf
+
 person_detection_int8.elf : $(OBJS) $(PD_OBJS) 
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(PD_OBJS) $(LDFLAGS)
 
@@ -273,6 +291,9 @@ micro_speech.elf : $(OBJS) $(MS_OBJS)
 magic_wand.elf : $(OBJS) $(MW_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(MW_OBJS) $(LDFLAGS)
 
+handwriting.elf : $(OBJS) $(HW_OBJS)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(HW_OBJS) $(LDFLAGS)
+		
 clean:
 	@echo 'cleaning'
 	-@$(RM) $(OBJS) $(PD_OBJS) $(MW_OBJS) $(MS_OBJS) $(HW_OBJS)
@@ -300,7 +321,8 @@ ifdef example
 	cp $(example).elf $(example).map $(GEN_TOOL_DIR) && \
 	cd $(GEN_TOOL_DIR) && \
 	$(GEN_TOOL_NAME) -e $(example).elf -m $(example).map -o $(example).img && \
-	cp $(example).img ..
+	cp $(example).img .. && \
+	rm $(example).elf $(example).map $(example).img
 else
 	$(error "please specific example=")
 endif

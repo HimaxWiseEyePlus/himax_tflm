@@ -5,10 +5,12 @@ Following examples are included :
 - magic wand example
 - micro speech example
 - person detection INT8 example
+- handwriting example
   
 ## Table of contents
   - [Prerequisites](#prerequisites)
   - [Deploy to Himax WE1 EVB](#deploy-to-himax-we1-evb)
+  - [Training your own model](#training-your-own-model)
    
 ## Prerequisites
 - Make Tool version
@@ -64,4 +66,15 @@ make person_detection_int8
 make flash example=person_detection_int8
 ```
 
+Build handwriting example and flash image, flash image name will be `handwriting.img`. please check [here](tensorflow/lite/micro/examples/handwriting/README.md#handwriting-example) to know more about handwriting detail. 
+
+```
+make handwriting
+make flash example=handwriting
+```
+
 After flash image generated, please download the flash image file to HIMAX WE1 EVB by UART, details are described [here](https://github.com/HimaxWiseEyePlus/bsp_tflu/tree/master/HIMAX_WE1_EVB_user_guide#flash-image-update-at-linux-environment)
+
+## Training your own model
+
+Model used by handwriting example is training with MNIST dataset, please take a look [here](tensorflow/lite/micro/examples/handwriting/training_a_model.md#train-handwriting-model-on-MNIST-dataset) about training flow if you are interested in.

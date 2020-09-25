@@ -13,12 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include "tensorflow/lite/micro/examples/person_detection_experimental/image_provider.h"
+#include "../../handwriting/image_provider.h"
 
+#include "../../handwriting/model_settings.h"
 #include "hx_drv_tflm.h"
-#include "tensorflow/lite/micro/examples/person_detection_experimental/model_settings.h"
 
+namespace {
 hx_drv_sensor_image_config_t g_pimg_config;
+}
 
 TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
                       int image_height, int channels, int8_t* image_data) {
@@ -28,10 +30,20 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
     if (hx_drv_sensor_initial(&g_pimg_config, 0) != HX_DRV_LIB_PASS) {
       return kTfLiteError;
     }
+
+    if (hx_drv_spim_init() != HX_DRV_LIB_PASS) {
+      return kTfLiteError;
+    }
+
     is_initialized = true;
   }
 
+  //capture image by sensor
   hx_drv_sensor_capture(&g_pimg_config);
+
+  //send jpeg image data out through SPI
+  hx_drv_spim_send(g_pimg_config.jpeg_address, g_pimg_config.jpeg_size,
+                   SPI_TYPE_JPG);
 
   hx_drv_image_rescale((uint8_t*)g_pimg_config.raw_address,
                        g_pimg_config.img_width, g_pimg_config.img_height,
