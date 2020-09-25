@@ -14,7 +14,7 @@ output result will be score of each category send out through Serial terminal li
 
 ![serial output](images/output_result_serial_terminal.png)
 
-and you can also check sensor image by SPI out 
+and you can also check sensor image by SPI output 
 
 ![serial output](images/output_result_spi.png)
 
