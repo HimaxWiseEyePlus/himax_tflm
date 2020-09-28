@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser = ArgumentParser(description="Train cnn model on mnist dataset.")
     parser.add_argument("-epochs", "--epochs", help="set number of epochs", dest="epochs", type=int, default=5)
     parser.add_argument("-bsize", "--batch-size", help="set batch size", dest="batch_size", type=int, default=64)
-    parser.add_argument("-save, --save-model-name", help="set save model name", dest="save_model_name"
+    parser.add_argument("-save", "--save-model-name", help="set save model name", dest="save_model_name"
                         , type=str, default="mnist_cnn")
 
     args = parser.parse_args()

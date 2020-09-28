@@ -13,10 +13,14 @@ This example aims to demonstrate how to train a neural network model and deploy 
 
 [vim]: https://www.vim.org/download.php#pc  "vim.org download page"
 
-you can also try to install by 
+you can also try to install by `pip` or `pip3` depend on your environment.
 
 ```
 pip install -r requirements.txt
+```
+or
+```
+pip3 install -r requirements.txt
 ```
 
 ## Tutorial
