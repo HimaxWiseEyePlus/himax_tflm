@@ -72,10 +72,10 @@ Training detail will be described from load dataset to create/test target model.
    For example, the output formula of convolutional layer is as follows:  
    Denote input size as : I x I, filter size as : F x F, stride as : S x S, padding as P x P
    and output size as : O x O, so the convolution layer output size formula is as follows:
-
-     <img src="https://latex.codecogs.com/png.latex? O=\frac{I-F+2P}{S+1}">
-
-   3. How to design network architeture:  
+   
+   <img src="https://latex.codecogs.com/png.latex?O = \frac{I-F+2P}{S+1}">
+   
+   1. How to design network architeture:  
    The general classifier neural network is usually designed as an inverted pyramid, likes
    gradually reducing the image resolution and increasing the channel dimension.
    However, there are no fixed rules regarding the stride or the filter size of the neural network layer or network architecture. 
@@ -124,7 +124,7 @@ Training detail will be described from load dataset to create/test target model.
    3. Recover the model output:  
    After model quantized, output of the model has to recover the data with zero point and scale likes the equation below:  
    
-   <img src="https://latex.codecogs.com/png.latex? output_{real}=\left(output_{int8} - zero\_points)  scale\right)">
+   <img src="https://latex.codecogs.com/png.latex?output_{real}=\left(output_{int8} - zero\_points\right) * scale">
     
    4. About the model accuracy after quantization:  
    Compare the difference between accuracy of the model before and after quantization, it can be found that 
