@@ -54,7 +54,7 @@ Training detail will be described from load dataset to create/test target model.
         and prevent a certain degree of overfitting.
         
         * `Maximum pooling layer` uses a filter to slide on feature map, and extract
-        the maximum information. It not only have no parameter, but also can let reduce size of model weight.
+        the maximum information. It not only have no parameter, but also reduce size of model weight.
         
         * `Fully connected layer` is a basic neural network layer, which mainly connects 
         all the neurons in the upper layer and uses weight of layer to implement linear transformation.
@@ -74,7 +74,7 @@ Training detail will be described from load dataset to create/test target model.
    and output size as : O x O, so the convolution layer output size formula is as follows:
      
      <p align="center">
-     <img src="https://latex.codecogs.com/png.latex?O=\frac{I-F+2P}{S+1}">
+     <img src="https://latex.codecogs.com/png.latex?O=\frac{I-F+2P}{S}+1">
      </p>
    
    1. How to design network architeture:  
