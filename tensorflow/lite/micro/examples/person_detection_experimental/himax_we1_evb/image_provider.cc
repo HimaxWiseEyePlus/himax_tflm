@@ -25,7 +25,7 @@ TfLiteStatus GetImage(tflite::ErrorReporter* error_reporter, int image_width,
   static bool is_initialized = false;
 
   if (!is_initialized) {
-    if (hx_drv_sensor_initial(&g_pimg_config, 0) != HX_DRV_LIB_PASS) {
+    if (hx_drv_sensor_initial(&g_pimg_config) != HX_DRV_LIB_PASS) {
       return kTfLiteError;
     }
     is_initialized = true;

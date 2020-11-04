@@ -17,7 +17,7 @@ MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v02.zip
 MODEL_LOC = tensorflow/lite/micro/tools/make/downloads/
 MODEL_NAME = model.zip
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v06.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v07.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
@@ -251,6 +251,7 @@ LDFLAGS+= \
 memory.lcf \
 -Hldopt=-Bgrouplib \
 libembarc.a \
+libbss.a \
 third_party/arc_mli_package/bin/himax_arcem9d_r16/release/libmli.a
 #=============================================================
 # Common rules
