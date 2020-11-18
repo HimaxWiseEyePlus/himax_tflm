@@ -20,7 +20,7 @@ limitations under the License.
 extern "C" void DebugLog(const char* s) {
   static bool is_initialized = false;
   if (!is_initialized) {
-    hx_drv_uart_initial();
+    hx_drv_uart_initial(UART_BR_115200);
     is_initialized = true;
   }
 
