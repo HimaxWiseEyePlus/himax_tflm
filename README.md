@@ -11,6 +11,7 @@ Following examples are included :
   - [Prerequisites](#prerequisites)
   - [Deploy to Himax WE1 EVB](#deploy-to-himax-we1-evb)
   - [Training your own model](#training-your-own-model)
+  - [Convert model from PyTorch to TensorFlow Lite for Microcontrollers](#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers)
    
 ## Prerequisites
 - Make Tool version
@@ -78,3 +79,9 @@ After flash image generated, please download the flash image file to HIMAX WE1 E
 ## Training your own model
 
 Model used by handwriting example is training with MNIST dataset, please take a look [here](tensorflow/lite/micro/examples/handwriting/training_a_model.md#train-handwriting-model-on-MNIST-dataset) about training flow if you are interested in.
+
+
+## Convert model from PyTorch to TensorFlow Lite for Microcontrollers
+
+Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a toturial to switch it to tflite model and deploy on HIMAX WE1 EVB.
+
