@@ -83,5 +83,5 @@ Model used by handwriting example is training with MNIST dataset, please take a 
 
 ## Convert model from PyTorch to TensorFlow Lite for Microcontrollers
 
-Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a toturial to switch it to tflite model and deploy on HIMAX WE1 EVB.
+Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a toturial to switch it to tflite model and deploy it on HIMAX WE1 EVB.
 

@@ -114,7 +114,7 @@ print("TensorFlow model test accuracy: {}%".format(tf_test_acc.result() * 100))
 
 ![](image/tf-model-test.png)
 
-[Optional] Use CLI to convert. [(ONNX-Tensorflow Command Line Interface)](https://github.com/onnx/onnx-tensorflow/blob/master/doc/CLI.md#onnx-tensorflow-command-line-interface)
+(Optional) Use CLI to convert. [ONNX-Tensorflow Command Line Interface](https://github.com/onnx/onnx-tensorflow/blob/master/doc/CLI.md#onnx-tensorflow-command-line-interface)
 ```bash
 onnx-tf convert -i ./mnist_cnn.onnx -o mnist_cnn_tf
 ```
