@@ -1,5 +1,5 @@
 # HIMAX TensorFlow Lite for Microcontrollers
-It is a modified version of the [TensorFlow Lite for Microcontrollers](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro) for use with HIMAX WE-I Plus Boards. Each example in the package has been tested in Ubuntu 20 environment.
+It is a modified version of the [TensorFlow Lite for Microcontrollers](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro) for use with HIMAX WE-I Plus Boards. Each example in the package has been tested in Ubuntu 20.04 LTS environment.
 
 Following examples are included :
 - magic wand example
@@ -83,5 +83,5 @@ Model used by handwriting example is training with MNIST dataset, please take a 
 
 ## Convert model from PyTorch to TensorFlow Lite for Microcontrollers
 
-Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a toturial to switch it to tflite model and deploy it on HIMAX WE1 EVB.
+Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a tutorial to switch it to tflite model and deploy it on HIMAX WE1 EVB.
 
