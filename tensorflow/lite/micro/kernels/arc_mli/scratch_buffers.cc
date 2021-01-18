@@ -50,6 +50,19 @@ namespace micro {
 #endif
 
 namespace {
+#if defined (__GNUC__) && !defined (__CCAC__)
+#define __Xdata_attr __attribute__((section(".Xdata")))
+#define _X  __Xdata_attr
+static int8_t _X scratch_mem_x[SCRATCH_MEM_X_SIZE];
+
+#define __Ydata_attr __attribute__((section(".Ydata")))
+#define _Y  __Ydata_attr
+static int8_t _Y scratch_mem_y[SCRATCH_MEM_Y_SIZE];
+
+#define __Zdata_attr __attribute__((section(".Zdata")))
+#define _Z  __Zdata_attr
+static int8_t _Z scratch_mem_z[SCRATCH_MEM_Z_SIZE];
+#else
 #pragma Bss(".Xdata")
 static int8_t scratch_mem_x[SCRATCH_MEM_X_SIZE];
 #pragma Bss()
@@ -61,6 +74,7 @@ static int8_t scratch_mem_y[SCRATCH_MEM_Y_SIZE];
 #pragma Bss(".Zdata")
 static int8_t scratch_mem_z[SCRATCH_MEM_Z_SIZE];
 #pragma Bss()
+#endif // if defined (__GNUC__) && !defined (__CCAC__)
 }  // namespace
 
 static int8_t *scratch_mem[] = {scratch_mem_x, scratch_mem_y, scratch_mem_z};

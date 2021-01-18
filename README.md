@@ -24,6 +24,16 @@ section for proper environment.
   See
 [Install the Synopsys DesignWare ARC MetaWare Development Toolkit](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/tools/make/targets/arc/README.md#install-the-synopsys-designware-arc-metaware-development-toolkit)
 section for instructions on toolchain installation.
+
+- GNU Development Toolkit
+
+  See
+[ARC GNU Tool Chain](https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain) section for more detail, current released GNU version is [GNU Toolchain for ARC Processors, 2020.09](https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz). After download and extract toolkit to local space, please remember to add it to environment PATH. For example:
+
+  ```
+  export PATH=[location of your ARC_GNU_ROOT]/bin:$PATH
+  ```
+
 - curl command
   
   Installing curl for Ubuntu Linux.
@@ -40,10 +50,17 @@ section for instructions on toolchain installation.
 
 The example project for HIMAX WE1 EVB platform can be generated with following command:
 
-Download related third party data and model setting (only need to download one time)
+Download related third party data and model setting (only need to download once)
 
 ```
 make download
+```
+
+Default building toolchain in makefile is Metaware Development toolkit, if you are trying to build example with GNU toolkit. please change the `ARC_TOOLCHAIN` define in `Makefile` like this
+
+```
+#ARC_TOOLCHAIN ?= mwdt
+ARC_TOOLCHAIN ?= gnu
 ```
 
 Build magic wand example and flash image, flash image name will be `magic_wand.img`
