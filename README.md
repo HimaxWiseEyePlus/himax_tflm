@@ -19,20 +19,25 @@ Following examples are included :
   A `make` tool is required for deploying Tensorflow Lite Micro applications, See
 [Check make tool version](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/tools/make/targets/arc/README.md#make-tool)
 section for proper environment.
-- MetaWare Development Toolkit
 
-  See
+- Development Toolkit
+  
+  Install one of the toolkits listed below:
+  
+  - MetaWare Development Toolkit
+
+    See
 [Install the Synopsys DesignWare ARC MetaWare Development Toolkit](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/tools/make/targets/arc/README.md#install-the-synopsys-designware-arc-metaware-development-toolkit)
 section for instructions on toolchain installation.
 
-- GNU Development Toolkit
+  - GNU Development Toolkit
 
-  See
+    See
 [ARC GNU Tool Chain](https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain) section for more detail, current released GNU version is [GNU Toolchain for ARC Processors, 2020.09](https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz). After download and extract toolkit to local space, please remember to add it to environment PATH. For example:
 
-  ```
-  export PATH=[location of your ARC_GNU_ROOT]/bin:$PATH
-  ```
+    ```
+    export PATH=[location of your ARC_GNU_ROOT]/bin:$PATH
+    ```
 
 - curl command
   
