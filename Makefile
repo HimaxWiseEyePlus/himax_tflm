@@ -1,8 +1,8 @@
 #=============================================================
 # Toolchain definitions
 #=============================================================
-ARC_TOOLCHAIN ?= mwdt
-#ARC_TOOLCHAIN ?= gnu
+#ARC_TOOLCHAIN ?= mwdt
+ARC_TOOLCHAIN ?= gnu
 
 ifeq ($(ARC_TOOLCHAIN), mwdt)
 	CC = ccac
@@ -29,7 +29,7 @@ MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v02.zip
 MODEL_LOC = tensorflow/lite/micro/tools/make/downloads/
 MODEL_NAME = model.zip
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v14.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v15.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
