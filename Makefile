@@ -324,8 +324,8 @@ CXXFLAGS += \
 -mmpy-option=6 \
 -mbarrel-shifter \
 -mfpu=fpus_all \
--I. \
 -I./$(SDK_PATH) \
+-I. \
 -I./third_party/gemmlowp \
 -I./third_party/flatbuffers/include \
 -I./third_party/ruy \
@@ -417,19 +417,19 @@ person_detection_int8.elf : $(OBJS) $(PD_OBJS)
 
 micro_speech.elf : $(OBJS) $(MS_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(MS_OBJS) $(LDFLAGS)
-	
+
 magic_wand.elf : $(OBJS) $(MW_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(MW_OBJS) $(LDFLAGS)
 
 handwriting.elf : $(OBJS) $(HW_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(HW_OBJS) $(LDFLAGS)
-		
+
 clean:
 	@echo 'cleaning'
 	-@$(RM) $(OBJS) $(PD_OBJS) $(MW_OBJS) $(MS_OBJS) $(HW_OBJS)
 	-@$(RM) *.elf
 	-@$(RM) *.map
-	
+
 download: $(MODEL_LOC)
 	@echo 'downloading'
 	@$(DL) $(LIB_LINK)  -o $(LIB_NAME)  
@@ -447,7 +447,7 @@ download: $(MODEL_LOC)
 	@$(RM) $(SDK_NAME)
 	@$(RM) $(TOOL_NAME)	
 	@$(RM) $(DEPEND_NAME)
-	
+
 $(MODEL_LOC):
 	@mkdir -p $@
 
