@@ -41,7 +41,14 @@ int32_t previous_time = 0;
 // The size of this will depend on the model you're using, and may need to be
 // determined by experimentation.
 constexpr int kTensorArenaSize = 10 * 1024;
-uint8_t tensor_arena[kTensorArenaSize];
+#if defined (_GNUC_) && !defined (_CCAC_)
+//static uint8_t __attribute__((section(".tensor_arena"))) tensor_arena[kTensorArenaSize];
+static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".bss.tensor_arena")));
+#else
+#pragma Bss(".tensor_arena")
+static uint8_t tensor_arena[kTensorArenaSize];
+#pragma Bss()
+#endif // if defined (_GNUC_) && !defined (_CCAC_)
 int8_t feature_buffer[kFeatureElementCount];
 int8_t* model_input_buffer = nullptr;
 }  // namespace
