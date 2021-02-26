@@ -277,7 +277,7 @@ $(MLI_PATH)/libmli.a \
 -Hnocopyr \
 -m \
 -Hldopt=-Coutput=$(MAP_NAME).map \
-$(SDK_PATH)/memory.lcf \
+memory.lcf \
 -Hldopt=-Bgrouplib \
 $(SDK_PATH)/libcpuarc.a \
 $(SDK_PATH)/libbss.a \
@@ -367,7 +367,7 @@ CCFLAGS+= \
 LDFLAGS +=  -Wl,-lmli -Wl,-lmwdepend -Wl,-marcv2elfx -Wl,-Map=memory.map -Wl,--strip-debug -Wl,--stats,--gc-sections -Wl,--cref \
 -L$(MLI_PATH) \
 -L$(DEPEND_PATH) \
--L$(SDK_PATH) \
+-L .\
 -Wl,--start-group \
 $(SDK_PATH)/libcpuarc.a \
 $(SDK_PATH)/libbss.a \

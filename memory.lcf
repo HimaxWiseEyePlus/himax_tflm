@@ -1,0 +1,113 @@
+    # SYSTEM memory regions indicate where external memory might be located.
+    #   The TCF has no specific knowledge of whether SYSTEM regions contain 
+    #   external memory or not.
+    # CCMWRAP memory regions indicate unusable portions of the address space
+    #   due to CCM memory wrapping into upper addresses beyond its size
+
+    MEMORY {
+        ICCM0   : ORIGIN = 0x00000000, LENGTH = 0x00010000
+        ICCM1   : ORIGIN = 0x10000000, LENGTH = 0x00050000
+        SYSTEM0 : ORIGIN = 0x20020800, LENGTH = 0x000E9AF0
+        DCCM    : ORIGIN = 0x80000000, LENGTH = 0x00040000
+        XCCM    : ORIGIN = 0x90000000, LENGTH = 0x00008000
+        YCCM    : ORIGIN = 0xa0000000, LENGTH = 0x00008000
+
+    }
+ENTRY(_arc_reset)
+
+SECTIONS {
+
+	GROUP : {
+		.init_bootstrap:{
+			*(.init_vector)
+			*(.init_bootstrap)
+		}
+		.vector ALIGN(1024): {
+			_f_vector = .;
+			*(.vector)
+			_e_vector = .;
+		}
+	} > ICCM1
+
+	GROUP : {
+
+		.text ALIGN(4): {
+			_f_text = .;
+			*(TYPE text)
+			_e_text = .;
+		}
+		
+ 	} > ICCM1
+
+    
+ 	GROUP : {
+		.rodata  ALIGN(4): {
+			_f_rodata = .;
+
+			_fctors = .;
+			*(.ctors*)
+			_ectors = .;
+			_fdtors = .;
+			*(.dtors*)
+			_edtors = .;
+			_feh_frame = .;
+			*(.eh_frame*)
+			_eeh_frame = .;
+
+			*(TYPE lit)
+
+			_e_rodata = .;
+		}
+
+	} > SYSTEM0
+
+
+	GROUP : {
+		.data ALIGN(8): {
+			_f_data = .;
+			_f_sdata = .;
+			*(.sdata)
+			_e_sdata = .;
+			*(TYPE data)
+		}
+		.tls ALIGN(8): {
+			*(.tls*)
+			_e_data = .;
+		}
+		.tensor_arena? ALIGN(16): {}
+
+	} > SYSTEM0 
+
+	GROUP (NOLOAD) : {
+		.bss ALIGN(16): {
+			_f_bss = .;
+			*(TYPE bss)
+			_e_bss = .;
+		}
+		.Zdata?: {}
+            
+	} > DCCM
+  
+  GROUP : {
+    .heap? ALIGN(8) SIZE(16384): {}
+    .stack ALIGN(8) SIZE(8192): {}
+  } >DCCM
+  
+  GROUP BLOCK(4): {
+    .Xdata? : {}
+  } > XCCM
+  GROUP BLOCK(4): {
+    .Ydata? : {}
+  } > YCCM
+
+	_f_stack = ADDR(.stack);
+	_e_stack = ADDR(.stack) + SIZEOF(.stack);
+	_f_heap = ADDR(.heap);
+	_e_heap = ADDR(.heap) + SIZEOF(.heap);
+
+	_load_addr_text = LOADADDR(.text);
+	_load_addr_rodata = LOADADDR(.rodata);
+	_load_addr_data = LOADADDR(.data);
+}
+
+
