@@ -74,16 +74,19 @@ SECTIONS {
 			*(.tls*)
 			_e_data = .;
 		}
-		.tensor_arena? ALIGN(16): {}
+		_f_bss = .;
+		.bss ALIGN(16): {
+			*(TYPE bss)
+		}
+		
+		.tensor_arena? ALIGN(16): {
+		}
+		_e_bss = .;
 
 	} > SYSTEM0 
 
 	GROUP (NOLOAD) : {
-		.bss ALIGN(16): {
-			_f_bss = .;
-			*(TYPE bss)
-			_e_bss = .;
-		}
+
 		.Zdata?: {}
             
 	} > DCCM

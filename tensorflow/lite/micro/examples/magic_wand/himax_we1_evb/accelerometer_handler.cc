@@ -17,7 +17,7 @@ limitations under the License.
 
 #include "hx_drv_tflm.h"
 
-
+int begin_index = 0;
 
 namespace {
 // Ring buffer size
@@ -29,7 +29,6 @@ bool pending_initial_data = true;
 // Available data count in accelerometer FIFO
 int available_count = 0;
 
-int begin_index;
 }  // namespace
 
 TfLiteStatus SetupAccelerometer(tflite::ErrorReporter* error_reporter) {
@@ -39,8 +38,6 @@ TfLiteStatus SetupAccelerometer(tflite::ErrorReporter* error_reporter) {
   }
 
   TF_LITE_REPORT_ERROR(error_reporter, "setup done");
-
-  begin_index = 0;
 
   return kTfLiteOk;
 }

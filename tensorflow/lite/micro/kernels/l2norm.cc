@@ -50,7 +50,9 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
   const TfLiteTensor* input = GetInput(context, node, kInputTensor);
+  TF_LITE_ENSURE(context, input != nullptr);
   TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
+  TF_LITE_ENSURE(context, output != nullptr);
 
   TF_LITE_ENSURE(context, NumDimensions(input) <= 4);
 
@@ -65,8 +67,7 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     data->input_zero_point = 0;
   }
 
-  // TODO(ahentz): For some reason our implementations don't support
-  // activations.
+  // Our implementations don't currently support activations.
   TF_LITE_ENSURE_EQ(context, params->activation, kTfLiteActNone);
 
   return kTfLiteOk;

@@ -205,14 +205,12 @@ SECTIONS {
         *(.sbss2 .sbss2.* .gnu.linkonce.sb2.*)   
     }  > sdata
     
-    .tensor           :
-    {
-        *(.tensor_arena*) 
-    }  > sdata
-    
+
     .bss_all           :
     {
         PROVIDE (_f_bss = .) ;
+        . = ALIGN(16);
+        *(.tensor_arena*) 
         *(.dynbss)
         *(.bss .bss.* .gnu.linkonce.b.*)
         *(COMMON)

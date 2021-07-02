@@ -192,13 +192,15 @@ char* FastFloatToBufferLeft(float f, char* buffer) {
   // works properly.
   *current = '0';
 
-  // Shift fraction values and prepent zeros.
-  for (int i = 0; i < fraction_digits; i++) {
-    current--;
-    *(current + leading_zeros) = *current;
-    *current = '0';
+  // Shift fraction values and prepend zeros if necessary.
+  if (leading_zeros != 0) {
+    for (int i = 0; i < fraction_digits; i++) {
+      current--;
+      *(current + leading_zeros) = *current;
+      *current = '0';
+    }
+    current += kMaxFractionalDigits;
   }
-  current += kMaxFractionalDigits;
 
   // Truncate trailing zeros for cleaner logs. Ensure we leave at least one
   // fractional character for the case when scaled_fraction is 0.
@@ -280,6 +282,14 @@ extern "C" int MicroVsnprintf(char* output, int len, const char* format,
           break;
         case '%':
           output[output_index++] = *current++;
+          break;
+        case 'c':
+          if (usable_length - output_index < 1) {
+            output[output_index++] = '\0';
+            return output_index;
+          }
+          output[output_index++] = va_arg(args, int32_t);
+          current++;
           break;
         case 's':
           char* string = va_arg(args, char*);
