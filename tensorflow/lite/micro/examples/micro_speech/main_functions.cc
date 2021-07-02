@@ -41,7 +41,7 @@ int32_t previous_time = 0;
 // The size of this will depend on the model you're using, and may need to be
 // determined by experimentation.
 constexpr int kTensorArenaSize = 10 * 1024;
-#if defined (_GNUC_) && !defined (_CCAC_)
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
 //static uint8_t __attribute__((section(".tensor_arena"))) tensor_arena[kTensorArenaSize];
 static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".bss.tensor_arena")));
 #else
