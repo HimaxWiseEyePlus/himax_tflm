@@ -47,6 +47,12 @@ section for instructions on toolchain installation.
   sudo apt upgrade
   sudo apt install curl
   ```
+- make command
+  
+  Installing make for Ubuntu Linux. (If make is not installed)
+  ```
+  sudo apt install make
+  ```
 - Serial Terminal Emulation Application
 
   There are 2 main purposes for HIMAX WE1 EVB Debug UART port, print application output and burn application to flash by using xmodem send application binary.
