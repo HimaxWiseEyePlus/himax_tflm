@@ -29,11 +29,11 @@ MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v03.zip
 MODEL_LOC = tensorflow/lite/micro/tools/make/downloads/
 MODEL_NAME = model.zip
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v18.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v19.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
-TOOL_LINK = https://www.himax.com.tw/we-i/image_gen_linux_v2_1_10.zip
+TOOL_LINK = https://www.himax.com.tw/we-i/image_gen_linux_v2_1_11.zip
 TOOL_LOC = .
 TOOL_NAME = image_gen.zip
 
@@ -275,6 +275,8 @@ CXXFLAGS+= \
 -Hnocopyr \
 -Hpurge \
 -Hcl \
+-Hcrt_fast_memcpy \
+-Hcrt_fast_memset \
 -fslp-vectorize-aggressive \
 -ffunction-sections \
 -fdata-sections \
@@ -306,6 +308,8 @@ CCFLAGS+= \
 -Hnocopyr \
 -Hpurge \
 -Hcl \
+-Hcrt_fast_memcpy \
+-Hcrt_fast_memset \
 -tcf=$(SDK_PATH)/arcem9d_wei_r16.tcf \
 -fslp-vectorize-aggressive \
 -ffunction-sections \
