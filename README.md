@@ -8,11 +8,19 @@ Following examples are included :
 - handwriting example
   
 ## Table of contents
+  - [Build Status](#build-status)
   - [Prerequisites](#prerequisites)
   - [Deploy to Himax WE1 EVB](#deploy-to-himax-we1-evb)
   - [Training your own model](#training-your-own-model)
   - [Convert model from PyTorch to TensorFlow Lite for Microcontrollers](#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers)
-   
+
+## Build Status
+
+|   Build Type  |  Status  |
+| -----------   |  --------- |
+| Build (Linux) | [![CI](https://github.com/HimaxWiseEyePlus/himax_tflm/actions/workflows/ci.yml/badge.svg)](https://github.com/HimaxWiseEyePlus/himax_tflm/actions/workflows/ci.yml)
+
+
 ## Prerequisites
 - Make Tool version
   
