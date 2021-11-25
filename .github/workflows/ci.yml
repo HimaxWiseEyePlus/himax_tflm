@@ -37,7 +37,8 @@ jobs:
           make download
           curl -Ls -f https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz -o arc_gnu.zip
           tar xvf arc_gnu.zip
-          export PATH=/arc_gnu_2020.09_prebuilt_elf32_le_linux_install/bin:$PATH
+          export PATH=/home/runner/arc_gnu_2020.09_prebuilt_elf32_le_linux_install/bin:$PATH
+          ls
           echo "arc_gnu tool chain is set to $PATH"
           
           echo "########################### Started: Building person detection example  #########################"
