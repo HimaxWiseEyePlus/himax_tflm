@@ -18,16 +18,19 @@ limitations under the License.
 #include <cstddef>
 #include <cstdint>
 
-#include "flatbuffers/flatbuffers.h"  // from @flatbuffers
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/core/api/error_reporter.h"
 #include "tensorflow/lite/core/api/flatbuffer_conversions.h"
 #include "tensorflow/lite/micro/compatibility.h"
+#include "tensorflow/lite/micro/flatbuffer_utils.h"
+#include "tensorflow/lite/micro/memory_planner/micro_memory_planner.h"
 #include "tensorflow/lite/micro/simple_memory_allocator.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
 namespace tflite {
 
+// TODO(b/199402574): rename to tflite_internal or just remove internal
+// namespace.
 namespace internal {
 
 // Sets up all of the data structure members for a TfLiteTensor based on the
@@ -82,6 +85,12 @@ typedef struct {
   TfLiteEvalTensor* tensors;
 } SubgraphAllocations;
 
+// The fixed amount of memory overhead of MicroAllocator. You can image this
+// number as the arena usage after MicroAllocator is given a model that has zero
+// tensors and zero OPs.
+extern const size_t kMicroAllocatorDefaultTailUsage;
+extern const size_t kMicroAllocatorDefaultTailUsageWithGivenMemoryPlanner;
+
 // Allocator responsible for allocating memory for all intermediate tensors
 // necessary to invoke a model.
 //
@@ -108,17 +117,27 @@ typedef struct {
 class MicroAllocator {
  public:
   // Creates a MicroAllocator instance from a given tensor arena. This arena
-  // will be managed by the created instance.
-  // Note: Please use __declspec(align(16)) to make sure tensor_arena is 16
+  // will be managed by the created instance. The GreedyMemoryPlanner will
+  // by default be used and created on the arena.
+  // Note: Please use alignas(16) to make sure tensor_arena is 16
   // bytes aligned, otherwise some head room will be wasted.
   // TODO(b/157615197): Cleanup constructor + factory usage.
   static MicroAllocator* Create(uint8_t* tensor_arena, size_t arena_size,
                                 ErrorReporter* error_reporter);
 
+  // Creates a MicroAllocator instance from a given tensor arena and a given
+  // MemoryPlanner. This arena will be managed by the created instance. Note:
+  // Please use alignas(16) to make sure tensor_arena is 16 bytes
+  // aligned, otherwise some head room will be wasted.
+  static MicroAllocator* Create(uint8_t* tensor_arena, size_t arena_size,
+                                MicroMemoryPlanner* memory_planner,
+                                ErrorReporter* error_reporter);
+
   // Creates a MicroAllocator instance using the provided SimpleMemoryAllocator
-  // intance. This allocator instance will use the SimpleMemoryAllocator
-  // instance to manage allocations internally.
+  // instance and the MemoryPlanner. This allocator instance will use the
+  // SimpleMemoryAllocator instance to manage allocations internally.
   static MicroAllocator* Create(SimpleMemoryAllocator* memory_allocator,
+                                MicroMemoryPlanner* memory_planner,
                                 ErrorReporter* error_reporter);
 
   // Allocates internal resources required for model inference for each subgraph
@@ -196,16 +215,11 @@ class MicroAllocator {
   // `FinishModelAllocation`. Otherwise, it will return 0.
   size_t used_bytes() const;
 
-  // Converts a flatbuffer int32_t array to a TfLiteIntArray, accounting for
-  // endiannes.
-  TfLiteStatus FlatBufferVectorToTfLiteTypeArray(
-      const flatbuffers::Vector<int32_t>* flatbuffer_array,
-      TfLiteIntArray** result);
-
   BuiltinDataAllocator* GetBuiltinDataAllocator();
 
  protected:
   MicroAllocator(SimpleMemoryAllocator* memory_allocator,
+                 MicroMemoryPlanner* memory_planner,
                  ErrorReporter* error_reporter);
   virtual ~MicroAllocator();
 
@@ -271,6 +285,9 @@ class MicroAllocator {
 
   // Allocator used to allocate persistent builtin data.
   BuiltinDataAllocator* builtin_data_allocator_;
+
+  // Activation buffer memory planner.
+  MicroMemoryPlanner* memory_planner_;
 
   ErrorReporter* error_reporter_;
   bool model_is_allocating_;

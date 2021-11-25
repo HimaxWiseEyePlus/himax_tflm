@@ -1,5 +1,5 @@
 # HIMAX TensorFlow Lite for Microcontrollers
-It is a modified version of the [TensorFlow Lite for Microcontrollers](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro) for use with HIMAX WE-I Plus Boards. Each example in the package has been tested in Ubuntu 20.04 LTS environment.
+It is a modified version of the [TensorFlow Lite for Microcontrollers](https://github.com/tensorflow/tflite-micro) for use with HIMAX WE-I Plus Boards. Each example in the package has been tested in Ubuntu 20.04 LTS environment.
 
 Following examples are included :
 - magic wand example

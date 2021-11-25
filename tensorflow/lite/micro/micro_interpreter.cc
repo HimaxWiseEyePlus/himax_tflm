@@ -19,9 +19,11 @@ limitations under the License.
 #include <cstdint>
 
 #include "flatbuffers/flatbuffers.h"  // from @flatbuffers
+#include "tensorflow/lite/c/c_api_types.h"
 #include "tensorflow/lite/c/common.h"
 #include "tensorflow/lite/core/api/error_reporter.h"
 #include "tensorflow/lite/core/api/tensor_utils.h"
+#include "tensorflow/lite/micro/flatbuffer_utils.h"
 #include "tensorflow/lite/micro/memory_helpers.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
 #include "tensorflow/lite/micro/micro_error_reporter.h"
@@ -37,6 +39,7 @@ MicroInterpreter::MicroInterpreter(const Model* model,
                                    uint8_t* tensor_arena,
                                    size_t tensor_arena_size,
                                    ErrorReporter* error_reporter,
+                                   MicroResourceVariables* resource_variables,
                                    MicroProfiler* profiler)
     : model_(model),
       op_resolver_(op_resolver),
@@ -44,7 +47,7 @@ MicroInterpreter::MicroInterpreter(const Model* model,
       allocator_(*MicroAllocator::Create(tensor_arena, tensor_arena_size,
                                          error_reporter)),
 
-      graph_(&context_, model, &allocator_),
+      graph_(&context_, model, &allocator_, resource_variables),
       tensors_allocated_(false),
       initialization_status_(kTfLiteError),
       input_tensors_(nullptr),
@@ -56,12 +59,13 @@ MicroInterpreter::MicroInterpreter(const Model* model,
                                    const MicroOpResolver& op_resolver,
                                    MicroAllocator* allocator,
                                    ErrorReporter* error_reporter,
+                                   MicroResourceVariables* resource_variables,
                                    MicroProfiler* profiler)
     : model_(model),
       op_resolver_(op_resolver),
       error_reporter_(error_reporter),
       allocator_(*allocator),
-      graph_(&context_, model, allocator),
+      graph_(&context_, model, allocator, resource_variables),
       tensors_allocated_(false),
       initialization_status_(kTfLiteError),
       input_tensors_(nullptr),
@@ -96,7 +100,8 @@ TfLiteStatus MicroInterpreter::PrepareNodeAndRegistrationDataFromFlatbuffer() {
     auto* opcodes = model_->operator_codes();
     BuiltinDataAllocator* builtin_data_allocator =
         allocator_.GetBuiltinDataAllocator();
-    for (size_t i = 0; i < subgraph->operators()->size(); ++i) {
+    uint32_t operators_size = NumSubgraphOperators(subgraph);
+    for (size_t i = 0; i < operators_size; ++i) {
       const auto* op = subgraph->operators()->Get(i);
       const size_t index = op->opcode_index();
       if (index >= opcodes->size()) {
@@ -157,13 +162,10 @@ TfLiteStatus MicroInterpreter::PrepareNodeAndRegistrationDataFromFlatbuffer() {
                                      (void**)(&builtin_data)));
       }
 
-      TfLiteIntArray* inputs_array;
-      TF_LITE_ENSURE_STATUS(allocator_.FlatBufferVectorToTfLiteTypeArray(
-          op->inputs(), &inputs_array));
-
-      TfLiteIntArray* outputs_array;
-      TF_LITE_ENSURE_STATUS(allocator_.FlatBufferVectorToTfLiteTypeArray(
-          op->outputs(), &outputs_array));
+      TfLiteIntArray* inputs_array =
+          FlatBufferVectorToTfLiteTypeArray(op->inputs());
+      TfLiteIntArray* outputs_array =
+          FlatBufferVectorToTfLiteTypeArray(op->outputs());
 
       TfLiteNode* node = &(
           graph_.GetAllocations()[subgraph_idx].node_and_registrations[i].node);
@@ -173,6 +175,11 @@ TfLiteStatus MicroInterpreter::PrepareNodeAndRegistrationDataFromFlatbuffer() {
       node->builtin_data = reinterpret_cast<void*>(builtin_data);
       node->custom_initial_data = custom_data;
       node->custom_initial_data_size = custom_data_size;
+
+      if (op->intermediates() && (op->intermediates()->size() > 0)) {
+        node->intermediates =
+            FlatBufferVectorToTfLiteTypeArray(op->intermediates());
+      }
     }
   }
   return kTfLiteOk;
@@ -197,12 +204,16 @@ TfLiteStatus MicroInterpreter::AllocateTensors() {
   context_.RequestScratchBufferInArena = nullptr;
   context_.GetScratchBuffer = nullptr;
   context_.GetExecutionPlan = GetGraph;
-  graph_.InitSubgraphs();
+  context_.GetExternalContext = nullptr;
+  TF_LITE_ENSURE_STATUS(graph_.InitSubgraphs());
 
   // Both AllocatePersistentBuffer and RequestScratchBufferInArena is
   // available in Prepare stage.
   context_.RequestScratchBufferInArena = RequestScratchBufferInArena;
-  graph_.PrepareSubgraphs();
+  // GetExternalContext become available in Prepare stage.
+  context_.GetExternalContext = GetExternalContext;
+
+  TF_LITE_ENSURE_STATUS(graph_.PrepareSubgraphs());
 
   // Prepare is done, we're ready for Invoke. Memory allocation is no longer
   // allowed. Kernels can only fetch scratch buffers via GetScratchBuffer.
@@ -368,6 +379,38 @@ TfLiteStatus MicroInterpreter::GetGraph(struct TfLiteContext* context,
       reinterpret_cast<MicroInterpreter*>(context->impl_);
   *args = reinterpret_cast<TfLiteIntArray*>(&interpreter->graph_);
   return kTfLiteOk;
+}
+
+TfLiteStatus MicroInterpreter::SetMicroExternalContext(
+    void* external_context_payload) {
+  if (external_context_payload == nullptr ||
+      external_context_payload_ != nullptr) {
+    MicroPrintf(
+        "Attempting to set external context to %x but it was %x already",
+        external_context_payload, external_context_payload_);
+    return kTfLiteError;
+  }
+
+  external_context_payload_ = external_context_payload;
+  return kTfLiteOk;
+}
+
+void* MicroInterpreter::GetMicroExternalContext() {
+  return external_context_payload_;
+}
+
+// This callback is an implementation for TfLiteContext::GetExternalContext
+// interface.
+TfLiteExternalContext* MicroInterpreter::GetExternalContext(
+    TfLiteContext* context, TfLiteExternalContextType unused) {
+  // TODO(b/205754757): TfLiteExternalContextType is unused in TFLM. This
+  // function is only called by the framework as a way to conform to existing
+  // interface. Users should use GetMicroExternalContext api in kernel_util.h to
+  // get context and shall not directly use this function.
+  MicroInterpreter* interpreter =
+      reinterpret_cast<MicroInterpreter*>(context->impl_);
+  return reinterpret_cast<TfLiteExternalContext*>(
+      interpreter->GetMicroExternalContext());
 }
 
 }  // namespace tflite

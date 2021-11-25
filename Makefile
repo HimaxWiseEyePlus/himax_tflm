@@ -21,13 +21,10 @@ RM = rm -rf
 DL = curl -Ls -f
 UNZIP = unzip 
 
-LIB_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/third_party_lib_v03.zip
+LIB_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/third_party_lib_v04.zip
 LIB_LOC = third_party/
 LIB_NAME = lib.zip
-
-MODEL_LINK = https://www.himax.com.tw/we-i/himax_tflu_tree/model_setting_v03.zip
-MODEL_LOC = tensorflow/lite/micro/tools/make/downloads/
-MODEL_NAME = model.zip
+THIRD_PARTY_LIB_NAME = third_party_lib_v04
 
 SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v19.zip
 SDK_LOC = .
@@ -52,49 +49,62 @@ endif
 #=============================================================
 
 SRCS := \
-tensorflow/lite/micro/simple_memory_allocator.cc \
-tensorflow/lite/micro/mock_micro_graph.cc \
-tensorflow/lite/micro/micro_allocator.cc \
-tensorflow/lite/micro/all_ops_resolver.cc \
-tensorflow/lite/micro/memory_helpers.cc \
-tensorflow/lite/micro/micro_interpreter.cc \
-tensorflow/lite/micro/micro_error_reporter.cc \
-tensorflow/lite/micro/micro_time.cc \
-tensorflow/lite/micro/recording_simple_memory_allocator.cc \
-tensorflow/lite/micro/micro_string.cc \
-tensorflow/lite/micro/micro_profiler.cc \
-tensorflow/lite/micro/micro_utils.cc \
 tensorflow/lite/micro/himax_we1_evb/debug_log.cc \
-tensorflow/lite/micro/test_helpers.cc \
+tensorflow/lite/micro/all_ops_resolver.cc \
+tensorflow/lite/micro/flatbuffer_utils.cc \
+tensorflow/lite/micro/memory_helpers.cc \
+tensorflow/lite/micro/micro_allocator.cc \
+tensorflow/lite/micro/micro_error_reporter.cc \
 tensorflow/lite/micro/micro_graph.cc \
-tensorflow/lite/micro/system_setup.cc \
+tensorflow/lite/micro/micro_interpreter.cc \
+tensorflow/lite/micro/micro_profiler.cc \
+tensorflow/lite/micro/micro_resource_variable.cc \
+tensorflow/lite/micro/micro_string.cc \
+tensorflow/lite/micro/micro_time.cc \
+tensorflow/lite/micro/micro_utils.cc \
+tensorflow/lite/micro/mock_micro_graph.cc \
 tensorflow/lite/micro/recording_micro_allocator.cc \
+tensorflow/lite/micro/recording_simple_memory_allocator.cc \
+tensorflow/lite/micro/simple_memory_allocator.cc \
+tensorflow/lite/micro/system_setup.cc \
+tensorflow/lite/micro/test_helpers.cc \
+tensorflow/lite/schema/schema_utils.cc \
 tensorflow/lite/micro/memory_planner/linear_memory_planner.cc \
 tensorflow/lite/micro/memory_planner/greedy_memory_planner.cc \
+tensorflow/lite/micro/memory_planner/non_persistent_buffer_planner_shim.cc \
 tensorflow/lite/c/common.c \
 tensorflow/lite/core/api/error_reporter.cc \
 tensorflow/lite/core/api/flatbuffer_conversions.cc \
 tensorflow/lite/core/api/op_resolver.cc \
 tensorflow/lite/core/api/tensor_utils.cc \
+tensorflow/lite/kernels/internal/reference/portable_tensor_utils.cc \
 tensorflow/lite/kernels/internal/quantization_util.cc \
 tensorflow/lite/kernels/kernel_util.cc \
-tensorflow/lite/schema/schema_utils.cc \
+tensorflow/lite/micro/kernels/arc_mli/add.cc \
+tensorflow/lite/micro/kernels/arc_mli/conv.cc \
+tensorflow/lite/micro/kernels/arc_mli/depthwise_conv.cc \
+tensorflow/lite/micro/kernels/arc_mli/fully_connected.cc \
+tensorflow/lite/micro/kernels/arc_mli/mli_interface.cc \
+tensorflow/lite/micro/kernels/arc_mli/pooling.cc \
+tensorflow/lite/micro/kernels/activations_common.cc \
 tensorflow/lite/micro/kernels/activations.cc \
-tensorflow/lite/micro/kernels/add.cc \
+tensorflow/lite/micro/kernels/add_common.cc \
 tensorflow/lite/micro/kernels/add_n.cc \
 tensorflow/lite/micro/kernels/arg_min_max.cc \
+tensorflow/lite/micro/kernels/assign_variable.cc \
 tensorflow/lite/micro/kernels/batch_to_space_nd.cc \
+tensorflow/lite/micro/kernels/call_once.cc \
 tensorflow/lite/micro/kernels/cast.cc \
 tensorflow/lite/micro/kernels/ceil.cc \
+tensorflow/lite/micro/kernels/circular_buffer_common.cc \
 tensorflow/lite/micro/kernels/circular_buffer.cc \
 tensorflow/lite/micro/kernels/comparisons.cc \
 tensorflow/lite/micro/kernels/concatenation.cc \
-tensorflow/lite/micro/kernels/arc_mli/conv.cc \
 tensorflow/lite/micro/kernels/conv_common.cc \
 tensorflow/lite/micro/kernels/cumsum.cc \
 tensorflow/lite/micro/kernels/depth_to_space.cc \
-tensorflow/lite/micro/kernels/arc_mli/depthwise_conv.cc \
 tensorflow/lite/micro/kernels/depthwise_conv_common.cc \
+tensorflow/lite/micro/kernels/dequantize_common.cc \
 tensorflow/lite/micro/kernels/dequantize.cc \
 tensorflow/lite/micro/kernels/detection_postprocess.cc \
 tensorflow/lite/micro/kernels/elementwise.cc \
@@ -106,118 +116,127 @@ tensorflow/lite/micro/kernels/fill.cc \
 tensorflow/lite/micro/kernels/floor.cc \
 tensorflow/lite/micro/kernels/floor_div.cc \
 tensorflow/lite/micro/kernels/floor_mod.cc \
-tensorflow/lite/micro/kernels/arc_mli/fully_connected.cc \
 tensorflow/lite/micro/kernels/fully_connected_common.cc \
 tensorflow/lite/micro/kernels/gather.cc \
 tensorflow/lite/micro/kernels/gather_nd.cc \
+tensorflow/lite/micro/kernels/hard_swish_common.cc \
 tensorflow/lite/micro/kernels/hard_swish.cc \
 tensorflow/lite/micro/kernels/if.cc \
 tensorflow/lite/micro/kernels/kernel_runner.cc \
 tensorflow/lite/micro/kernels/kernel_util.cc \
 tensorflow/lite/micro/kernels/l2norm.cc \
 tensorflow/lite/micro/kernels/l2_pool_2d.cc \
+tensorflow/lite/micro/kernels/leaky_relu_common.cc \
 tensorflow/lite/micro/kernels/leaky_relu.cc \
-tensorflow/lite/micro/kernels/logical.cc \
-tensorflow/lite/micro/kernels/logistic.cc \
 tensorflow/lite/micro/kernels/log_softmax.cc \
+tensorflow/lite/micro/kernels/logical.cc \
+tensorflow/lite/micro/kernels/logical_common.cc \
+tensorflow/lite/micro/kernels/logistic.cc \
+tensorflow/lite/micro/kernels/logistic_common.cc \
 tensorflow/lite/micro/kernels/maximum_minimum.cc \
 tensorflow/lite/micro/kernels/mul.cc \
+tensorflow/lite/micro/kernels/mul_common.cc \
 tensorflow/lite/micro/kernels/neg.cc \
 tensorflow/lite/micro/kernels/pack.cc \
 tensorflow/lite/micro/kernels/pad.cc \
-tensorflow/lite/micro/kernels/arc_mli/pooling.cc \
+tensorflow/lite/micro/kernels/pooling_common.cc \
 tensorflow/lite/micro/kernels/prelu.cc \
+tensorflow/lite/micro/kernels/prelu_common.cc \
 tensorflow/lite/micro/kernels/quantize.cc \
 tensorflow/lite/micro/kernels/quantize_common.cc \
+tensorflow/lite/micro/kernels/read_variable.cc \
 tensorflow/lite/micro/kernels/reduce.cc \
 tensorflow/lite/micro/kernels/reshape.cc \
 tensorflow/lite/micro/kernels/resize_bilinear.cc \
 tensorflow/lite/micro/kernels/resize_nearest_neighbor.cc \
 tensorflow/lite/micro/kernels/round.cc \
 tensorflow/lite/micro/kernels/shape.cc \
+tensorflow/lite/micro/kernels/slice.cc \
 tensorflow/lite/micro/kernels/softmax.cc \
 tensorflow/lite/micro/kernels/softmax_common.cc \
 tensorflow/lite/micro/kernels/space_to_batch_nd.cc \
+tensorflow/lite/micro/kernels/space_to_depth.cc \
 tensorflow/lite/micro/kernels/split.cc \
 tensorflow/lite/micro/kernels/split_v.cc \
 tensorflow/lite/micro/kernels/squeeze.cc \
 tensorflow/lite/micro/kernels/strided_slice.cc \
 tensorflow/lite/micro/kernels/sub.cc \
+tensorflow/lite/micro/kernels/sub_common.cc \
 tensorflow/lite/micro/kernels/svdf.cc \
 tensorflow/lite/micro/kernels/svdf_common.cc \
 tensorflow/lite/micro/kernels/tanh.cc \
 tensorflow/lite/micro/kernels/transpose.cc \
 tensorflow/lite/micro/kernels/transpose_conv.cc \
 tensorflow/lite/micro/kernels/unpack.cc \
+tensorflow/lite/micro/kernels/var_handle.cc \
 tensorflow/lite/micro/kernels/zeros_like.cc 
 
 PD_SRCS := \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.cc \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.cc \
 tensorflow/lite/micro/kernels/arc_mli/mli_slicers.cc \
-tensorflow/lite/micro/examples/person_detection/himax_we1_evb/detection_responder.cc \
-tensorflow/lite/micro/examples/person_detection/himax_we1_evb/image_provider.cc \
-tensorflow/lite/micro/examples/person_detection/main.cc \
-tensorflow/lite/micro/examples/person_detection/main_functions.cc \
-tensorflow/lite/micro/examples/person_detection/model_settings.cc \
-tensorflow/lite/micro/tools/make/downloads/person_model_int8/person_detect_model_data.cc
+examples/person_detection/himax_we1_evb/detection_responder.cc \
+examples/person_detection/himax_we1_evb/image_provider.cc \
+examples/person_detection/main.cc \
+examples/person_detection/main_functions.cc \
+examples/person_detection/model_settings.cc \
+examples/person_detection/person_detect_model_data.cc
 
 MW_SRCS := \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.cc \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.cc \
 tensorflow/lite/micro/kernels/arc_mli/mli_slicers.cc \
-tensorflow/lite/micro/examples/magic_wand/main.cc \
-tensorflow/lite/micro/examples/magic_wand/main_functions.cc \
-tensorflow/lite/micro/examples/magic_wand/magic_wand_model_data.cc \
-tensorflow/lite/micro/examples/magic_wand/himax_we1_evb/accelerometer_handler.cc \
-tensorflow/lite/micro/examples/magic_wand/gesture_predictor.cc \
-tensorflow/lite/micro/examples/magic_wand/output_handler.cc
+examples/magic_wand/main.cc \
+examples/magic_wand/main_functions.cc \
+examples/magic_wand/magic_wand_model_data.cc \
+examples/magic_wand/himax_we1_evb/accelerometer_handler.cc \
+examples/magic_wand/gesture_predictor.cc \
+examples/magic_wand/output_handler.cc
 
 MS_SRCS := \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.cc \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.cc \
 tensorflow/lite/micro/kernels/arc_mli/mli_slicers.cc \
-tensorflow/lite/micro/examples/micro_speech/main.cc \
-tensorflow/lite/micro/examples/micro_speech/main_functions.cc \
-tensorflow/lite/micro/examples/micro_speech/himax_we1_evb/audio_provider.cc \
-tensorflow/lite/micro/examples/micro_speech/feature_provider.cc \
-tensorflow/lite/micro/examples/micro_speech/micro_features/no_micro_features_data.cc \
-tensorflow/lite/micro/examples/micro_speech/micro_features/yes_micro_features_data.cc \
-tensorflow/lite/micro/examples/micro_speech/micro_features/model.cc \
-tensorflow/lite/micro/examples/micro_speech/recognize_commands.cc \
-tensorflow/lite/micro/examples/micro_speech/himax_we1_evb/command_responder.cc \
-tensorflow/lite/micro/examples/micro_speech/micro_features/micro_features_generator.cc \
-tensorflow/lite/micro/examples/micro_speech/micro_features/micro_model_settings.cc \
-tensorflow/lite/experimental/microfrontend/lib/fft.cc \
+examples/micro_speech/micro_speech_model_data.cc \
+examples/micro_speech/recognize_commands.cc \
+examples/micro_speech/main.cc \
+examples/micro_speech/main_functions.cc \
+examples/micro_speech/himax_we1_evb/audio_provider.cc \
+examples/micro_speech/feature_provider.cc \
+examples/micro_speech/micro_features/no_micro_features_data.cc \
+examples/micro_speech/micro_features/yes_micro_features_data.cc \
+examples/micro_speech/himax_we1_evb/command_responder.cc \
+examples/micro_speech/micro_features/micro_features_generator.cc \
+examples/micro_speech/micro_features/micro_model_settings.cc \
 tensorflow/lite/experimental/microfrontend/lib/fft_util.cc \
-tensorflow/lite/experimental/microfrontend/lib/filterbank.c \
+tensorflow/lite/experimental/microfrontend/lib/fft.cc \
 tensorflow/lite/experimental/microfrontend/lib/filterbank_util.c \
-tensorflow/lite/experimental/microfrontend/lib/frontend.c \
+tensorflow/lite/experimental/microfrontend/lib/filterbank.c \
 tensorflow/lite/experimental/microfrontend/lib/frontend_util.c \
+tensorflow/lite/experimental/microfrontend/lib/frontend.c \
 tensorflow/lite/experimental/microfrontend/lib/log_lut.c \
-tensorflow/lite/experimental/microfrontend/lib/log_scale.c \
 tensorflow/lite/experimental/microfrontend/lib/log_scale_util.c \
-tensorflow/lite/experimental/microfrontend/lib/noise_reduction.c \
+tensorflow/lite/experimental/microfrontend/lib/log_scale.c \
 tensorflow/lite/experimental/microfrontend/lib/noise_reduction_util.c \
-tensorflow/lite/experimental/microfrontend/lib/pcan_gain_control.c \
+tensorflow/lite/experimental/microfrontend/lib/noise_reduction.c \
 tensorflow/lite/experimental/microfrontend/lib/pcan_gain_control_util.c \
-tensorflow/lite/experimental/microfrontend/lib/window.c \
+tensorflow/lite/experimental/microfrontend/lib/pcan_gain_control.c \
 tensorflow/lite/experimental/microfrontend/lib/window_util.c \
-tensorflow/lite/micro/tools/make/downloads/kissfft/kiss_fft.c \
-tensorflow/lite/micro/tools/make/downloads/kissfft/tools/kiss_fftr.c
-
+tensorflow/lite/experimental/microfrontend/lib/window.c \
+third_party/kissfft/kiss_fft.c \
+third_party/kissfft/tools/kiss_fftr.c \
+tensorflow/lite/experimental/microfrontend/lib/kiss_fft_int16.cc
 
 HW_SRCS := \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.cc \
 tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.cc \
 tensorflow/lite/micro/kernels/arc_mli/mli_slicers.cc \
-tensorflow/lite/micro/examples/handwriting/himax_we1_evb/detection_responder.cc \
-tensorflow/lite/micro/examples/handwriting/himax_we1_evb/image_provider.cc \
-tensorflow/lite/micro/examples/handwriting/main.cc \
-tensorflow/lite/micro/examples/handwriting/main_functions.cc \
-tensorflow/lite/micro/examples/handwriting/model_settings.cc \
-tensorflow/lite/micro/tools/make/downloads/handwriting/model_data.cc
-
+examples/handwriting/himax_we1_evb/detection_responder.cc \
+examples/handwriting/himax_we1_evb/image_provider.cc \
+examples/handwriting/main.cc \
+examples/handwriting/main_functions.cc \
+examples/handwriting/model_settings.cc \
+examples/handwriting/model_data.cc
 
 OBJS := \
 $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(SRCS)))
@@ -233,6 +252,9 @@ $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(MS_SRCS)))
 
 HW_OBJS := \
 $(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(HW_SRCS)))
+
+HEWO_OBJS := \
+$(patsubst %.cc,%.o,$(patsubst %.c,%.o,$(HEWO_SRCS)))
 #=============================================================
 # Applications settings
 #=============================================================
@@ -288,7 +310,8 @@ CXXFLAGS+= \
 -I./third_party/ruy \
 -I./third_party/arc_mli_package/include \
 -I./third_party/arc_mli_package/include/api \
--I./tensorflow/lite/micro/tools/make/downloads/kissfft
+-I./third_party/kissfft \
+-I./third_party/kissfft/tools
 
 CCFLAGS+= \
 -Wimplicit-function-declaration \
@@ -322,7 +345,8 @@ CCFLAGS+= \
 -I./third_party/ruy \
 -I./third_party/arc_mli_package/include \
 -I./third_party/arc_mli_package/include/api \
--I./tensorflow/lite/micro/tools/make/downloads/kissfft
+-I./third_party/kissfft \
+-I./third_party/kissfft/tools
 
 LDFLAGS+= \
 $(MLI_PATH)/libmli.a \
@@ -386,8 +410,8 @@ CXXFLAGS += \
 -I./third_party/ruy \
 -I./third_party/arc_mli_package/include \
 -I./third_party/arc_mli_package/include/api \
--I./tensorflow/lite/micro/tools/make/downloads/kissfft \
 -DSCRATCH_MEM_Z_SIZE=0x10000 \
+-I./third_party/kissfft
 
 
 CCFLAGS+= \
@@ -417,12 +441,12 @@ CCFLAGS+= \
 -I./third_party/ruy \
 -I./third_party/arc_mli_package/include \
 -I./third_party/arc_mli_package/include/api \
--I./tensorflow/lite/micro/tools/make/downloads/kissfft \
+-I./third_party/kissfft
 
 LDFLAGS +=  -Wl,-lmli -Wl,-lmwdepend -Wl,-marcv2elfx -Wl,-Map=memory.map -Wl,--strip-debug -Wl,--stats,--gc-sections -Wl,--cref \
 -L$(MLI_PATH) \
 -L$(DEPEND_PATH) \
--L .\
+-L. \
 -Wl,--start-group \
 $(SDK_PATH)/libcpuarc.a \
 $(SDK_PATH)/libbss.a \
@@ -433,9 +457,7 @@ $(SDK_PATH)/liblibaudio.a \
 $(SDK_PATH)/liblibsecurity.a \
 $(SDK_PATH)/liblibsensordp.a \
 $(SDK_PATH)/liblibtflm.a \
--Wl,--end-group \
-
-
+-Wl,--end-group
 endif # ARC_TOOLCHAIN
 
 #=============================================================
@@ -479,27 +501,26 @@ magic_wand.elf : $(OBJS) $(MW_OBJS)
 
 handwriting.elf : $(OBJS) $(HW_OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(HW_OBJS) $(LDFLAGS)
-		
+
 clean:
 	@echo 'cleaning'
 	-@$(RM) $(OBJS) $(PD_OBJS) $(MW_OBJS) $(MS_OBJS) $(HW_OBJS)
 	-@$(RM) *.elf
 	-@$(RM) *.map
-	
+
 download: $(MODEL_LOC)
 	@echo 'downloading'
 	@$(DL) $(LIB_LINK)  -o $(LIB_NAME)  
-	@$(DL) $(MODEL_LINK)  -o $(MODEL_NAME)
 	@$(DL) $(SDK_LINK)  -o $(SDK_NAME)
 	@$(DL) $(TOOL_LINK)  -o $(TOOL_NAME)
 	@$(DL) $(DEPEND_LINK)  -o $(DEPEND_NAME)
-	@$(UNZIP) -o $(LIB_NAME) -d $(LIB_LOC)
-	@$(UNZIP) -o $(MODEL_NAME) -d $(MODEL_LOC)
+	@$(UNZIP) -o $(LIB_NAME) 
 	@$(UNZIP) -o $(SDK_NAME) -d $(SDK_LOC) 
 	@$(UNZIP) -o $(TOOL_NAME) -d $(TOOL_LOC)	
 	@$(UNZIP) -o $(DEPEND_NAME) -d $(DEPEND_LOC)
+	cp -r $(THIRD_PARTY_LIB_NAME)/* $(LIB_LOC)
+	@$(RM) $(THIRD_PARTY_LIB_NAME)
 	@$(RM) $(LIB_NAME)
-	@$(RM) $(MODEL_NAME)
 	@$(RM) $(SDK_NAME)
 	@$(RM) $(TOOL_NAME)	
 	@$(RM) $(DEPEND_NAME)
