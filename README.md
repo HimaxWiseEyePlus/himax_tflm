@@ -95,7 +95,7 @@ make person_detection_int8
 make flash example=person_detection_int8
 ```
 
-Build handwriting example and flash image, flash image name will be `handwriting.img`. please check [here](tensorflow/lite/micro/examples/handwriting/README.md#handwriting-example) to know more about handwriting detail. 
+Build handwriting example and flash image, flash image name will be `handwriting.img`. please check [here](examples/handwriting/README.md#handwriting-example) to know more about handwriting detail. 
 
 ```
 make handwriting
@@ -106,10 +106,10 @@ After flash image generated, please download the flash image file to HIMAX WE1 E
 
 ## Training your own model
 
-Model used by handwriting example is training with MNIST dataset, please take a look [here](tensorflow/lite/micro/examples/handwriting/training_a_model.md#train-handwriting-model-on-MNIST-dataset) about training flow if you are interested in.
+Model used by handwriting example is training with MNIST dataset, please take a look [here](examples/handwriting/training_a_model.md#train-handwriting-model-on-MNIST-dataset) about training flow if you are interested in.
 
 
 ## Convert model from PyTorch to TensorFlow Lite for Microcontrollers
 
-Whenever there is a PyTorch model in your hand, [here](tensorflow/lite/micro/examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a tutorial to switch it to tflite model and deploy it on HIMAX WE1 EVB.
+Whenever there is a PyTorch model in your hand, [here](examples/handwriting/pytorch_onnx_tflite/README.md#convert-model-from-pytorch-to-tensorflow-lite-for-microcontrollers) is a tutorial to switch it to tflite model and deploy it on HIMAX WE1 EVB.
 
