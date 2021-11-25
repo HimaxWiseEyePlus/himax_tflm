@@ -1,0 +1,62 @@
+# YAML schema for GitHub Actions:
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
+#
+# Helpful YAML parser to clarify YAML syntax:
+# https://yaml-online-parser.appspot.com/
+#
+#
+# This file contains the workflows that are run periodically to build the examples.
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  schedule:
+    # 12:00am UTC is 6am IST depending on daylight savings.
+    - cron: '0 12 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch: {}
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    name: Build Total Examples
+
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.repository == 'HimaxWiseEyePlus/himax_tflm')
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Build
+        run:  |
+          make download
+          curl -Ls -f https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz -o arc_gnu.zip
+          unzip -o arc_gnu.zip -d arc_gnu
+          export PATH=/arc_gnu/arc_gnu_2020.09_prebuilt_elf32_le_linux_install/bin:$PATH
+          echo "arc_gnu tool chain is set to $PATH"
+          
+          echo "########################### Started: Building person detection example  #########################"
+          make person_detection_int8
+          make flash example=person_detection_int8
+          echo "########################### Done: Building person detection example  ############################"
+          
+          echo "########################### Started: Building magic wand example ################################"
+          make magic_wand
+          make flash example=magic_wand
+          echo "########################### Done: Building magic wand example ###################################"          
+          
+          echo "########################### Started: Building micro speech example #############################"
+          make micro_speech
+          make flash example=micro_speech
+          echo "########################### Done: Building micro speech example ###############################"
+
+          echo "########################### Started: Building handwriting example #############################"
+          make handwriting
+          make flash example=handwriting
+          echo "########################### Done: Building handwriting example #############################" 
+        
