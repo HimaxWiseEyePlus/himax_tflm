@@ -10,9 +10,9 @@ name: Sync from tflite-micro
 # Controls when the workflow will run
 
 on:
-  schedule:
+  #schedule:
     # 1pm UTC is 7am PT depending on daylight savings.
-    - cron: '0 13 * * *'
+    #- cron: '0 13 * * *'
     
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch: {}
@@ -97,8 +97,8 @@ jobs:
           cp -r tensorflow himax_tflm/
           cd himax_tflm
           
-          git config --local user.name "kris-himax"
-          git config --local user.email "kris_yeh@himax.com.tw"
+          git config --local user.name "TFLM-bot"
+          git config --local user.email "tflm-github-bot@google.com"
           git add *
           if [[ $(git status --porcelain | wc -l) == 0 ]]; then
             echo "no changes"
@@ -112,8 +112,11 @@ jobs:
         with:
           branch: sync-from-tflite-micro
           delete-branch: true
-          token: ${{ secrets.UPDATE_TFLM_TOKEN }}
+          token: ${{ secrets.TFLM_BOT_REPO_TOKEN }}
           title: (WE-I) Automated sync from github.com/tensorflow/tflite-micro
           commit-message: Automated sync from github.com/tensorflow/tflite-micro
+          committer: TFLM-bot <tflm-github-bot@google.com>
+          author: TFLM-bot <tflm-github-bot@google.com>
           body: "(WE-I) Automated sync from github.com/tensorflow/tflite-micro"
-          labels: ci:run
+          labels: bot:sync-tf, ci:run
+          reviewers: advaitjain
