@@ -28,8 +28,6 @@ jobs:
     steps:
       - uses: actions/setup-python@v2
       - uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.UPDATE_TFLM_TOKEN }}
 
       - name: Sync the code
         run: |
