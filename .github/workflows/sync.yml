@@ -1,0 +1,124 @@
+# YAML schema for GitHub Actions:
+# https://help.github.com/en/actions/automating-your-workflow-with-github-actions/workflow-syntax-for-github-actions
+#
+# Helpful YAML parser to clarify YAML syntax:
+# https://yaml-online-parser.appspot.com/
+#
+
+name: Sync from tflite-micro
+
+# Controls when the workflow will run
+
+on:
+  schedule:
+    # 1pm UTC is 7am PT depending on daylight savings.
+    - cron: '0 13 * * *'
+    
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.repository == 'HimaxWiseEyePlus/himax_tflm')
+    
+    steps:
+      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Sync the code
+        run: |
+          pip3 install Pillow Wave
+          mkdir temp
+
+          cd temp
+
+          git clone https://github.com/tensorflow/tflite-micro
+          cd ..
+
+          make download
+
+          cd third_party/arc_mli_package/bin
+          mkdir emsdp_em11d_em9d_dfss
+          cp -r himax_arcem9d_r16/* emsdp_em11d_em9d_dfss/
+          cd ..
+          cd ..
+          cd ..
+          cp -r third_party/arc_mli_package temp/tflite-micro/third_party/
+
+          cd temp
+          cd tflite-micro
+
+          python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py   -e hello_world -e magic_wand -e micro_speech -e person_detection   --makefile_options="TARGET=arc_emsdp OPTIMIZED_KERNEL_DIR=arc_mli ARC_TAGS=arc" tmp/tflm-mli
+
+          cd ..
+          cd ..
+
+          cp -r tensorflow/lite/micro/himax_we1_evb temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/
+          rm -rf temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/arc_emsdp
+          rm -rf temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/kernels/arc_mli
+          rm -rf temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/models
+          cp -r tensorflow/lite/micro/kernels/arc_mli temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/kernels/
+          rm -rf tensorflow
+          cp -r temp/tflite-micro/tmp/tflm-mli/tensorflow .
+          rm -rf third_party/arc_mli_package/bin/emsdp_em11d_em9d_dfss
+          rm -rf temp
+          
+          curl -Ls -f https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz -o arc_gnu.zip
+          tar xvf arc_gnu.zip
+          export PATH=/home/runner/work/himax_tflm/himax_tflm/arc_gnu_2020.09_prebuilt_elf32_le_linux_install/bin:$PATH
+          echo "arc_gnu tool chain is set to $PATH"
+          
+          echo "########################### Started: Building person detection example  #########################"
+          make person_detection_int8
+          make flash example=person_detection_int8
+          echo "########################### Done: Building person detection example  ############################"
+          
+          echo "########################### Started: Building magic wand example ################################"
+          make magic_wand
+          make flash example=magic_wand
+          echo "########################### Done: Building magic wand example ###################################"          
+          
+          echo "########################### Started: Building micro speech example #############################"
+          make micro_speech
+          make flash example=micro_speech
+          echo "########################### Done: Building micro speech example ###############################"
+          echo "########################### Started: Building handwriting example #############################"
+          make handwriting
+          make flash example=handwriting
+          echo "########################### Done: Building handwriting example #############################" 
+          
+          make clean
+          git clone https://github.com/HimaxWiseEyePlus/himax_tflm
+          rm -rf himax_tflm/tensorflow
+          cp -r tensorflow himax_tflm/
+          cd himax_tflm
+          
+          git config --local user.name "TFLM-bot"
+          git config --local user.email "tflm-github-bot@google.com"
+          git add *
+          if [[ $(git status --porcelain | wc -l) == 0 ]]; then
+            echo "no changes"
+          else
+            git commit -m "Sync from tflite-micro."
+          fi
+
+      - name: Create Pull Request
+        id: create-pr
+        uses: peter-evans/create-pull-request@052fc72b4198ba9fbc81b818c6e1859f747d49a8
+        with:
+          branch: sync-from-tflite-micro
+          delete-branch: true
+          token: ${{ secrets.TFLM_BOT_REPO_TOKEN }}
+          title: (WE-I) Automated sync from github.com/tensorflow/tflite-micro
+          commit-message: Automated sync from github.com/tensorflow/tflite-micro
+          committer: TFLM-bot <tflm-github-bot@google.com>
+          author: TFLM-bot <tflm-github-bot@google.com>
+          body: "(WE-I) Automated sync from github.com/tensorflow/tflite-micro"
+          labels: bot:sync-tf, ci:run
+          reviewers: advaitjain
