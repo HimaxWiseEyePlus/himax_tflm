@@ -29,7 +29,7 @@ jobs:
       - uses: actions/setup-python@v2
       - uses: actions/checkout@v2
         with:
-          token: ${{ secrets.TFLM_BOT_REPO_TOKEN }}
+          token: ${{ secrets.UPDATE_TFLM_TOKEN }}
 
       - name: Sync the code
         run: |
@@ -99,8 +99,8 @@ jobs:
           cp -r tensorflow himax_tflm/
           cd himax_tflm
           
-          git config --local user.name "TFLM-bot"
-          git config --local user.email "tflm-github-bot@google.com"
+          git config --local user.name "kris-himax"
+          git config --local user.email "kris_yeh@himax.com.tw"
           git add *
           if [[ $(git status --porcelain | wc -l) == 0 ]]; then
             echo "no changes"
@@ -114,11 +114,11 @@ jobs:
         with:
           branch: sync-from-tflite-micro
           delete-branch: true
-          token: ${{ secrets.TFLM_BOT_REPO_TOKEN }}
+          token: ${{ secrets.UPDATE_TFLM_TOKEN }}
           title: (WE-I) Automated sync from github.com/tensorflow/tflite-micro
           commit-message: Automated sync from github.com/tensorflow/tflite-micro
-          committer: TFLM-bot <tflm-github-bot@google.com>
-          author: TFLM-bot <tflm-github-bot@google.com>
+          committer: kris-himax
+          author: kris-himax
           body: "(WE-I) Automated sync from github.com/tensorflow/tflite-micro"
           labels: bot:sync-tf, ci:run
           reviewers: advaitjain
