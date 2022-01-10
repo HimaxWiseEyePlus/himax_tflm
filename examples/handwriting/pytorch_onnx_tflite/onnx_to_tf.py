@@ -30,7 +30,7 @@ for example in ds:
     image = np.array(example["image"],dtype="float32")
     label = example["label"]
     inputs = tf.reshape(image,[1,1,28,28])
-
+    inputs = inputs/255
     output = f(inputs)['output_0']
     tf_test_acc.update_state(y_true=label, y_pred=output)
 

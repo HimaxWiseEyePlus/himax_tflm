@@ -7,7 +7,7 @@ TF_PATH = "mnist_cnn_tf"
 TFLITE_PATH = "mnist_dynamic_quantized_28x28.tflite"
 
 # Load the mnist dataset
-ds, info = tfds.load('mnist', split='train', with_info=True)
+ds, info = tfds.load('mnist', split='test', with_info=True)
 
 # Make a converter object from the saved tensorflow file
 converter = tf.lite.TFLiteConverter.from_saved_model(TF_PATH)
