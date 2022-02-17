@@ -25,7 +25,7 @@ Following examples are included :
 - Make Tool version
   
   A `make` tool is required for deploying Tensorflow Lite Micro applications, See
-[Check make tool version](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/tools/make/targets/arc/README.md#make-tool)
+[Check make tool version](https://github.com/tensorflow/tflite-micro/tree/main/tensorflow/lite/micro/tools/make/targets/arc#make-tool)
 section for proper environment.
 
 - Development Toolkit
@@ -35,7 +35,7 @@ section for proper environment.
   - MetaWare Development Toolkit
 
     See
-[Install the Synopsys DesignWare ARC MetaWare Development Toolkit](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/tools/make/targets/arc/README.md#install-the-synopsys-designware-arc-metaware-development-toolkit)
+[Install the Synopsys DesignWare ARC MetaWare Development Toolkit](https://github.com/tensorflow/tflite-micro/tree/main/tensorflow/lite/micro/tools/make/targets/arc#install-the-synopsys-designware-arc-metaware-development-toolkit)
 section for instructions on toolchain installation.
 
   - GNU Development Toolkit
