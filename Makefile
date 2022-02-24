@@ -1,8 +1,8 @@
 #=============================================================
 # Toolchain definitions
 #=============================================================
-#ARC_TOOLCHAIN ?= mwdt
-ARC_TOOLCHAIN ?= gnu
+ARC_TOOLCHAIN ?= mwdt
+#ARC_TOOLCHAIN ?= gnu
 
 ifeq ($(ARC_TOOLCHAIN), mwdt)
 	CC = ccac
@@ -26,7 +26,7 @@ LIB_LOC = third_party/
 LIB_NAME = lib.zip
 THIRD_PARTY_LIB_NAME = third_party_lib_v04
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v19.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v20.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
