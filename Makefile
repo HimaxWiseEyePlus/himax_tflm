@@ -1,8 +1,8 @@
 #=============================================================
 # Toolchain definitions
 #=============================================================
-ARC_TOOLCHAIN ?= mwdt
-#ARC_TOOLCHAIN ?= gnu
+#ARC_TOOLCHAIN ?= mwdt
+ARC_TOOLCHAIN ?= gnu
 
 ifeq ($(ARC_TOOLCHAIN), mwdt)
 	CC = ccac
