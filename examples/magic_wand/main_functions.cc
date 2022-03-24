@@ -38,7 +38,13 @@ int input_length;
 // The size of this will depend on the model you're using, and may need to be
 // determined by experimentation.
 constexpr int kTensorArenaSize = 60 * 1024;
-uint8_t tensor_arena[kTensorArenaSize];
+#if (defined(__GNUC__) || defined(__GNUG__)) && !defined (__CCAC__)
+static uint8_t tensor_arena[kTensorArenaSize] __attribute__((section(".tensor_arena")));
+#else
+#pragma Bss(".tensor_arena")
+static uint8_t tensor_arena[kTensorArenaSize];
+#pragma Bss()
+#endif // if defined (_GNUC_) && !defined (_CCAC_)
 }  // namespace
 
 // The name of this function is important for Arduino compatibility.
