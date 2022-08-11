@@ -30,7 +30,7 @@ SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v20.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
-TOOL_LINK = https://www.himax.com.tw/we-i/image_gen_linux_v2_1_11.zip
+TOOL_LINK = https://www.himax.com.tw/we-i/image_gen_linux_v2_1_12.zip
 TOOL_LOC = .
 TOOL_NAME = image_gen.zip
 
