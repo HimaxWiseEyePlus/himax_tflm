@@ -64,47 +64,24 @@ jobs:
           cp -r tensorflow/lite/micro/kernels/arc_mli temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/kernels/
           rm -rf tensorflow
           cp -r temp/tflite-micro/tmp/tflm-mli/tensorflow .
-          #####################################2022/10/05
+          #####################################################################2022/10/05 
           cp -r ./third_party/arc_mli_package temp/tflite-micro/tmp/tflm-mli/third_party/
           cp -r ./third_party/mw_gnu_dependencies/ temp/tflite-micro/tmp/tflm-mli/third_party/
           rm -rf third_party
           cp -r temp/tflite-micro/tmp/tflm-mli/third_party .
-          ###################################
+          #####################################################################2022/10/05
           rm -rf third_party/arc_mli_package/bin/emsdp_em11d_em9d_dfss
           rm -rf temp
           
-          curl -Ls -f https://github.com/foss-for-synopsys-dwc-arc-processors/toolchain/releases/download/arc-2020.09-release/arc_gnu_2020.09_prebuilt_elf32_le_linux_install.tar.gz -o arc_gnu.zip
-          tar xvf arc_gnu.zip
-          export PATH=/home/runner/work/himax_tflm/himax_tflm/arc_gnu_2020.09_prebuilt_elf32_le_linux_install/bin:$PATH
-          echo "arc_gnu tool chain is set to $PATH"
           
-          echo "########################### Started: Building person detection example  #########################"
-          make person_detection_int8
-          make flash example=person_detection_int8
-          echo "########################### Done: Building person detection example  ############################"
-          
-          echo "########################### Started: Building magic wand example ################################"
-          make magic_wand
-          make flash example=magic_wand
-          echo "########################### Done: Building magic wand example ###################################"          
-          
-          echo "########################### Started: Building micro speech example #############################"
-          make micro_speech
-          make flash example=micro_speech
-          echo "########################### Done: Building micro speech example ###############################"
-          echo "########################### Started: Building handwriting example #############################"
-          make handwriting
-          make flash example=handwriting
-          echo "########################### Done: Building handwriting example #############################" 
-          
-          make clean
           git clone https://github.com/HimaxWiseEyePlus/himax_tflm
           rm -rf himax_tflm/tensorflow
           cp -r tensorflow himax_tflm/
+          cp -r third_party himax_tflm/
           cd himax_tflm
           
-          git config --local user.name "TFLM-bot"
-          git config --local user.email "tflm-github-bot@google.com"
+          git config --local user.name "kris-himax"
+          git config --local user.email "kris_yeh@himax.com.tw"
           git add *
           if [[ $(git status --porcelain | wc -l) == 0 ]]; then
             echo "no changes"
@@ -118,11 +95,10 @@ jobs:
         with:
           branch: sync-from-tflite-micro
           delete-branch: true
-          token: ${{ secrets.TFLM_BOT_REPO_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN  }}
           title: (WE-I) Automated sync from github.com/tensorflow/tflite-micro
           commit-message: Automated sync from github.com/tensorflow/tflite-micro
           committer: TFLM-bot <tflm-github-bot@google.com>
           author: TFLM-bot <tflm-github-bot@google.com>
           body: "(WE-I) Automated sync from github.com/tensorflow/tflite-micro"
           labels: bot:sync-tf, ci:run
-          reviewers: advaitjain
