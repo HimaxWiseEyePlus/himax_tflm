@@ -64,6 +64,12 @@ jobs:
           cp -r tensorflow/lite/micro/kernels/arc_mli temp/tflite-micro/tmp/tflm-mli/tensorflow/lite/micro/kernels/
           rm -rf tensorflow
           cp -r temp/tflite-micro/tmp/tflm-mli/tensorflow .
+          #####################################2022/10/05
+          cp -r ./third_party/arc_mli_package temp/tflite-micro/tmp/tflm-mli/third_party/
+          cp -r ./third_party/mw_gnu_dependencies/ temp/tflite-micro/tmp/tflm-mli/third_party/
+          rm -rf third_party
+          cp -r temp/tflite-micro/tmp/tflm-mli/third_party .
+          ###################################
           rm -rf third_party/arc_mli_package/bin/emsdp_em11d_em9d_dfss
           rm -rf temp
           
