@@ -28,6 +28,7 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/arc_mli/scratch_buf_mgr.h"
 #include "tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -123,10 +124,15 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   const auto params =
       static_cast<const TfLiteFullyConnectedParams*>(node->builtin_data);
 
-  const TfLiteTensor* input = GetInput(context, node, kInputTensor);
-  const TfLiteTensor* filter = GetInput(context, node, kWeightsTensor);
-  const TfLiteTensor* bias = GetOptionalInputTensor(context, node, kBiasTensor);
-  TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
+  MicroContext* micro_context = GetMicroContext(context);
+
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kInputTensor);
+  TfLiteTensor* filter =
+      micro_context->AllocateTempInputTensor(node, kWeightsTensor);
+  TfLiteTensor* bias =
+      micro_context->AllocateTempInputTensor(context, node, kBiasTensor);
+  TfLiteTensor* output = AllocateTempOutputTensor(node, kOutputTensor);
 
   TF_LITE_ENSURE_TYPES_EQ(context, input->type, output->type);
   TF_LITE_ENSURE_MSG(context, input->type == filter->type,
@@ -156,6 +162,10 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     ops::micro::ConvertToMliTensor(input, &data->mli_in);
     ops::micro::ConvertToMliTensor(filter, &data->mli_weights);
     ops::micro::ConvertToMliTensor(bias, &data->mli_bias);
+#ifdef MLI_2_0
+    ops::micro::AdjustBiasTensor(&data->mli_bias, &data->mli_in,
+                                 &data->mli_weights);
+#endif
     ops::micro::ConvertToMliTensor(output, &data->mli_out);
 
 #ifdef MLI_2_0
@@ -185,9 +195,15 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
 #endif
     data->mli_in.Shape()[2] = 0;
     data->mli_in.Shape()[3] = 0;
+    data->mli_in.MemStride()[0] = data->mli_in.Shape()[1];
+    data->mli_in.MemStride()[1] = 0;
     *data->mli_in.Rank() = 2;
   }
 
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(filter);
+  micro_context->DeallocateTempTfLiteTensor(bias);
+  micro_context->DeallocateTempTfLiteTensor(output);
   return status;
 }
 
@@ -313,8 +329,7 @@ TfLiteStatus EvalMliQuantizedInt8(TfLiteContext* context, TfLiteNode* node,
     // Assertion here to prevent usage non-contiguous buffer memory.
     if (data.mli_out.Shape()[out_tensor_dimension] !=
         out_slice.Sub()->shape[0]) {
-      TF_LITE_KERNEL_LOG(
-          context, "Slicing is not supported with real-time permutation.");
+      MicroPrintf("Slicing is not supported with real-time permutation.");
       return kTfLiteError;
     }
     mli_permute_cfg permute_cfg = {{1, 0, 2, 3}};
@@ -323,6 +338,10 @@ TfLiteStatus EvalMliQuantizedInt8(TfLiteContext* context, TfLiteNode* node,
 #endif
 
     while (!out_slice.Done()) {
+      if (!out_is_local) {
+        ops::micro::PrepareLocalTensor(out_slice.Sub(), &out_local);
+        ops::micro::PrepareLocalTensor(in_slice.Sub(), &in_local);
+      }
       // if same input copy as previous iteration, skip the copy of input
 #ifdef MLI_2_0
       if (in_slice.Sub()->data.mem.pi8 != input_buffer_ptr) {
@@ -378,8 +397,7 @@ TfLiteStatus EvalQuantized(TfLiteContext* context, TfLiteNode* node,
       tflite::micro::GetTensorData<int8_t>(output));
   return kTfLiteOk;
 #else
-  TF_LITE_KERNEL_LOG(context,
-                     "Node configuration is not supported by ARC MLI Library.");
+  MicroPrintf("Node configuration is not supported by ARC MLI Library.");
   return kTfLiteError;
 #endif
 }
@@ -407,9 +425,8 @@ TfLiteStatus EvalFloat(TfLiteContext* context, TfLiteNode* node,
       tflite::micro::GetTensorData<float>(output));
   return kTfLiteOk;
 #else
-  TF_LITE_KERNEL_LOG(context,
-                     "Type %s (%d) is not supported by ARC MLI Library.",
-                     TfLiteTypeGetName(input->type), input->type);
+  MicroPrintf("Type %s (%d) is not supported by ARC MLI Library.",
+              TfLiteTypeGetName(input->type), input->type);
   return kTfLiteError;
 #endif
 }
@@ -445,22 +462,15 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       }
 
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                         TfLiteTypeGetName(input->type), input->type);
+      MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(input->type),
+                  input->type);
       return kTfLiteError;
   }
   return kTfLiteOk;
 }
 
 TfLiteRegistration Register_FULLY_CONNECTED() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(Init, Prepare, Eval);
 }
 
 }  // namespace tflite

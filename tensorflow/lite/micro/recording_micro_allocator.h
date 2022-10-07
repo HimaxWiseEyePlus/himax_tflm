@@ -16,9 +16,9 @@ limitations under the License.
 #ifndef TENSORFLOW_LITE_MICRO_RECORDING_MICRO_ALLOCATOR_H_
 #define TENSORFLOW_LITE_MICRO_RECORDING_MICRO_ALLOCATOR_H_
 
+#include "tensorflow/lite/micro/arena_allocator/recording_single_arena_buffer_allocator.h"
 #include "tensorflow/lite/micro/compatibility.h"
 #include "tensorflow/lite/micro/micro_allocator.h"
-#include "tensorflow/lite/micro/recording_simple_memory_allocator.h"
 
 namespace tflite {
 
@@ -48,21 +48,31 @@ struct RecordedAllocation {
 // Utility subclass of MicroAllocator that records all allocations
 // inside the arena. A summary of allocations can be logged through the
 // ErrorReporter by invoking LogAllocations(). This special allocator requires
-// an instance of RecordingSimpleMemoryAllocator to capture allocations in the
-// head and tail. Arena allocation recording can be retrieved by type through
-// the GetRecordedAllocation() function. This class should only be used for
-// auditing memory usage or integration testing.
+// an instance of RecordingSingleArenaBufferAllocator to capture allocations in
+// the head and tail. Arena allocation recording can be retrieved by type
+// through the GetRecordedAllocation() function. This class should only be used
+// for auditing memory usage or integration testing.
 class RecordingMicroAllocator : public MicroAllocator {
  public:
+  // TODO(b/246776144): Will be removed with http://b/246776144
   static RecordingMicroAllocator* Create(uint8_t* tensor_arena,
                                          size_t arena_size,
-                                         ErrorReporter* error_reporter);
+                                         ErrorReporter* error_reporter) {
+    (void)error_reporter;
+    return RecordingMicroAllocator::Create(tensor_arena, arena_size);
+  }
+
+  static RecordingMicroAllocator* Create(uint8_t* tensor_arena,
+                                         size_t arena_size);
+
+  // Returns the fixed amount of memory overhead of RecordingMicroAllocator.
+  static size_t GetDefaultTailUsage();
 
   // Returns the recorded allocations information for a given allocation type.
   RecordedAllocation GetRecordedAllocation(
       RecordedAllocationType allocation_type) const;
 
-  const RecordingSimpleMemoryAllocator* GetSimpleMemoryAllocator() const;
+  const RecordingSingleArenaBufferAllocator* GetSimpleMemoryAllocator() const;
 
   // Logs out through the ErrorReporter all allocation recordings by type
   // defined in RecordedAllocationType.
@@ -91,9 +101,8 @@ class RecordingMicroAllocator : public MicroAllocator {
                                                   bool allocate_temp) override;
 
  private:
-  RecordingMicroAllocator(RecordingSimpleMemoryAllocator* memory_allocator,
-                          MicroMemoryPlanner* memory_planner,
-                          ErrorReporter* error_reporter);
+  RecordingMicroAllocator(RecordingSingleArenaBufferAllocator* memory_allocator,
+                          MicroMemoryPlanner* memory_planner);
 
   void PrintRecordedAllocation(RecordedAllocationType allocation_type,
                                const char* allocation_name,
@@ -103,7 +112,7 @@ class RecordingMicroAllocator : public MicroAllocator {
   void RecordAllocationUsage(const RecordedAllocation& snapshotted_allocation,
                              RecordedAllocation& recorded_allocation);
 
-  const RecordingSimpleMemoryAllocator* recording_memory_allocator_;
+  const RecordingSingleArenaBufferAllocator* recording_memory_allocator_;
 
   RecordedAllocation recorded_tflite_eval_tensor_data_ = {};
   RecordedAllocation recorded_persistent_tflite_tensor_data_ = {};

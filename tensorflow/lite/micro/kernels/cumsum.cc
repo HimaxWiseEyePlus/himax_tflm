@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace {
@@ -47,8 +48,12 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
-  const TfLiteTensor* input = GetInput(context, node, kInputTensor);
-  const TfLiteTensor* axis = GetInput(context, node, kAxisTensor);
+  MicroContext* micro_context = GetMicroContext(context);
+
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kInputTensor);
+  TfLiteTensor* axis =
+      micro_context->AllocateTempInputTensor(node, kAxisTensor);
 
   TF_LITE_ENSURE(context,
                  input->type == kTfLiteFloat32 || input->type == kTfLiteInt8);
@@ -58,7 +63,8 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
 
   TF_LITE_ENSURE(context, NumDimensions(input) >= 1);
 
-  TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kOutputTensor);
 
   TF_LITE_ENSURE_EQ(context, input->type, output->type);
   TF_LITE_ENSURE(context, HaveSameShapes(input, output));
@@ -91,6 +97,10 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
         &data->output_activation_max));
   }
 
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(axis);
+  micro_context->DeallocateTempTfLiteTensor(output);
+
   return kTfLiteOk;
 }
 
@@ -114,7 +124,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
   if (axis < 0) axis += input_shape.DimensionsCount();
 
   if (axis < 0 || axis >= input_shape.DimensionsCount()) {
-    TF_LITE_KERNEL_LOG(context, "CUMSUM Invalid axis: %d", axis);
+    MicroPrintf("CUMSUM Invalid axis: %d", axis);
     return kTfLiteError;
   }
 
@@ -147,9 +157,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     } break;
 
     default: {
-      TF_LITE_KERNEL_LOG(context,
-                         "CUMSUM only supports FLOAT32 and INT8, got %s.",
-                         TfLiteTypeGetName(output->type));
+      MicroPrintf("CUMSUM only supports FLOAT32 and INT8, got %s.",
+                  TfLiteTypeGetName(output->type));
       return kTfLiteError;
     }
   }
@@ -160,14 +169,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace
 
 TfLiteRegistration Register_CUMSUM() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(nullptr, Prepare, Eval);
 }
 
 }  // namespace tflite

@@ -17,12 +17,13 @@ limitations under the License.
 
 #include <math.h>
 
-#include "tensorflow/lite/micro/micro_error_reporter.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace ops {
 namespace micro {
 
+#ifndef MLI_2_0
 template <>
 int8_t* MliTensorInterface::Data<int8_t>(void) {
   TFLITE_DCHECK(tensor_->el_type == MLI_EL_ASYM_I8);
@@ -147,6 +148,7 @@ void MliTensorInterface::SetElType(TfLiteType type) {
     TFLITE_ABORT;
   }
 }
+#endif
 
 }  // namespace micro
 }  // namespace ops

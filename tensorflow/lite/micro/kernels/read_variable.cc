@@ -23,8 +23,8 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/memory_helpers.h"
-#include "tensorflow/lite/micro/micro_error_reporter.h"
 #include "tensorflow/lite/micro/micro_graph.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_resource_variable.h"
 #include "tensorflow/lite/schema/schema_generated.h"
 
@@ -39,12 +39,16 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(NumInputs(node) == 1);
   TFLITE_DCHECK(NumOutputs(node) == 1);
 
-  const TfLiteTensor* input_resource_id_tensor =
-      GetInput(context, node, kInputVariableId);
+  MicroContext* micro_context = GetMicroContext(context);
+
+  TfLiteTensor* input_resource_id_tensor =
+      micro_context->AllocateTempInputTensor(node, kInputVariableId);
 
   TFLITE_DCHECK(input_resource_id_tensor != nullptr);
   TFLITE_DCHECK(input_resource_id_tensor->type == kTfLiteResource);
   TFLITE_DCHECK(NumElements(input_resource_id_tensor) == 1);
+
+  micro_context->DeallocateTempTfLiteTensor(input_resource_id_tensor);
 
   return kTfLiteOk;
 }
@@ -58,14 +62,10 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       tflite::micro::GetEvalOutput(context, node, kOutputValue);
   TFLITE_DCHECK(output_value != nullptr);
 
-  // Casting to TfliteIntArray is required since we are re-using
-  // GetExecutionPlan from TfLiteContext. On TFLM this method returns a
-  // MicroGraph.
-  // TODO(b/188226309): Design a cleaner way to get a graph from kernel context.
-  MicroGraph* graph_info;
-  context->GetExecutionPlan(context,
-                            reinterpret_cast<TfLiteIntArray**>(&graph_info));
-  MicroResourceVariables* resources = graph_info->GetResourceVariables();
+  tflite::MicroContext* micro_context = tflite::GetMicroContext(context);
+  MicroGraph& graph_info = micro_context->graph();
+
+  MicroResourceVariables* resources = graph_info.GetResourceVariables();
   if (resources == nullptr) {
     MicroPrintf(
         "READ_VARIABLE requires resource variables. Please create "
@@ -81,14 +81,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace.
 
 TfLiteRegistration Register_READ_VARIABLE() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(nullptr, Prepare, Eval);
 }
 
 }  // namespace tflite
