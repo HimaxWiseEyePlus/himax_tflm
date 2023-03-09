@@ -26,7 +26,7 @@ LIB_LOC = third_party/
 LIB_NAME = lib.zip
 THIRD_PARTY_LIB_NAME = third_party_lib_v04
 
-SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v20.zip
+SDK_LINK = https://www.himax.com.tw/we-i/himax_we1_sdk_v21.zip
 SDK_LOC = .
 SDK_NAME = sdk.zip
 
@@ -349,6 +349,7 @@ CCFLAGS+= \
 -I./third_party/kissfft/tools
 
 LDFLAGS+= \
+-buildlib \
 $(MLI_PATH)/libmli.a \
 -Hheap=8192 \
 -Hnocopyr \
@@ -364,6 +365,7 @@ $(SDK_PATH)/liblibcommon.a \
 $(SDK_PATH)/liblibaudio.a \
 $(SDK_PATH)/liblibsecurity.a \
 $(SDK_PATH)/liblibsensordp.a \
+$(SDK_PATH)/liblibclib.a \
 $(SDK_PATH)/liblibtflm.a
 
 else ifeq ($(ARC_TOOLCHAIN), gnu)
@@ -456,6 +458,7 @@ $(SDK_PATH)/liblibcommon.a \
 $(SDK_PATH)/liblibaudio.a \
 $(SDK_PATH)/liblibsecurity.a \
 $(SDK_PATH)/liblibsensordp.a \
+$(SDK_PATH)/liblibclib.a \
 $(SDK_PATH)/liblibtflm.a \
 -Wl,--end-group
 endif # ARC_TOOLCHAIN
