@@ -18,6 +18,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_utils.h"
 
 namespace tflite {
@@ -97,26 +98,29 @@ TfLiteStatus Gather(const TfLiteGatherParams* params,
 }
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+  MicroContext* micro_context = GetMicroContext(context);
+
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
   const auto* params =
       reinterpret_cast<const TfLiteGatherParams*>(node->builtin_data);
-  const TfLiteTensor* input;
-  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kInputTensor, &input));
-  const TfLiteTensor* coords;
-  TF_LITE_ENSURE_OK(context,
-                    GetInputSafe(context, node, kInputPositions, &coords));
-  TfLiteTensor* output;
-  TF_LITE_ENSURE_OK(context,
-                    GetOutputSafe(context, node, kOutputTensor, &output));
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, kInputTensor);
+  TF_LITE_ENSURE(context, input != nullptr);
+  TfLiteTensor* coords =
+      micro_context->AllocateTempInputTensor(node, kInputPositions);
+  TF_LITE_ENSURE(context, coords != nullptr);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kOutputTensor);
+  TF_LITE_ENSURE(context, output != nullptr);
+
   switch (coords->type) {
     case kTfLiteInt32:
       break;
     default:
-      TF_LITE_KERNEL_LOG(context,
-                         "Positions of type '%s' are not supported by gather.",
-                         TfLiteTypeGetName(coords->type));
+      MicroPrintf("Positions of type '%s' are not supported by gather.",
+                  TfLiteTypeGetName(coords->type));
       return kTfLiteError;
       break;
   }
@@ -130,8 +134,8 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     case kTfLiteInt8:
       break;
     default:
-      TF_LITE_KERNEL_LOG(context, "Type '%s' is not supported by gather.",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Type '%s' is not supported by gather.",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
       break;
   }
@@ -176,6 +180,11 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   for (int i = axis + 1; i < input->dims->size; ++i) {
     output_shape->data[output_index++] = input->dims->data[i];
   }
+
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(coords);
+  micro_context->DeallocateTempTfLiteTensor(output);
+
   return kTfLiteOk;
 }
 
@@ -198,8 +207,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
         return Gather<int8_t, int32_t>(params, input, coords, output);
         break;
       default:
-        TF_LITE_KERNEL_LOG(context, "Type '%s' is not supported by gather.",
-                           TfLiteTypeGetName(input->type));
+        MicroPrintf("Type '%s' is not supported by gather.",
+                    TfLiteTypeGetName(input->type));
         return kTfLiteError;
         break;
     }
@@ -209,14 +218,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace
 
 TfLiteRegistration Register_GATHER() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(nullptr, Prepare, Eval);
 }
 
 }  // namespace tflite

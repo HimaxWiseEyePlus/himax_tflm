@@ -23,6 +23,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/kernels/op_macros.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 namespace ops {
@@ -43,19 +44,26 @@ void* Init(TfLiteContext* context, const char* buffer, size_t length) {
 }
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+  MicroContext* micro_context = GetMicroContext(context);
+
   TFLITE_DCHECK(node->user_data != nullptr);
   OpData* data = static_cast<OpData*>(node->user_data);
 
   TF_LITE_ENSURE(context, NumInputs(node) == 2 || NumInputs(node) == 3);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
-  const TfLiteTensor* input = GetInput(context, node, /*index=*/0);
+  TfLiteTensor* input =
+      micro_context->AllocateTempInputTensor(node, /*index=*/0);
   TF_LITE_ENSURE(context, input != nullptr);
-  const TfLiteTensor* paddings = GetInput(context, node, /*index=*/1);
+  TfLiteTensor* paddings =
+      micro_context->AllocateTempInputTensor(node, /*index=*/1);
   TF_LITE_ENSURE(context, paddings != nullptr);
-  const TfLiteTensor* constant_values =
-      NumInputs(node) == 3 ? GetInput(context, node, /*index=*/2) : nullptr;
-  TfLiteTensor* output = GetOutput(context, node, /*index=*/0);
+  TfLiteTensor* constant_values =
+      NumInputs(node) == 3
+          ? micro_context->AllocateTempInputTensor(node, /*index=*/2)
+          : nullptr;
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, /*index=*/0);
   TF_LITE_ENSURE(context, output != nullptr);
 
   TF_LITE_ENSURE_EQ(context, input->type, output->type);
@@ -121,6 +129,13 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     }
     data->output_zero_point = output->params.zero_point;
   }
+
+  micro_context->DeallocateTempTfLiteTensor(input);
+  micro_context->DeallocateTempTfLiteTensor(paddings);
+  if (constant_values != nullptr) {
+    micro_context->DeallocateTempTfLiteTensor(constant_values);
+  }
+  micro_context->DeallocateTempTfLiteTensor(output);
 
   return kTfLiteOk;
 }
@@ -199,8 +214,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     } break;
     default:
 
-      TF_LITE_KERNEL_LOG(context, "Type %s not currently supported by Pad.",
-                         TfLiteTypeGetName(input->type));
+      MicroPrintf("Type %s not currently supported by Pad.",
+                  TfLiteTypeGetName(input->type));
       return kTfLiteError;
   }
   return kTfLiteOk;
@@ -209,26 +224,12 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace pad
 
 TfLiteRegistration Register_PAD() {
-  return {/*init=*/pad::Init,
-          /*free=*/nullptr,
-          /*prepare=*/pad::Prepare,
-          /*invoke=*/pad::Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(pad::Init, pad::Prepare, pad::Eval);
 }
 
 // Also register Pad as PadV2.
 TfLiteRegistration Register_PADV2() {
-  return {/*init=*/pad::Init,
-          /*free=*/nullptr,
-          /*prepare=*/pad::Prepare,
-          /*invoke=*/pad::Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(pad::Init, pad::Prepare, pad::Eval);
 }
 
 }  // namespace micro

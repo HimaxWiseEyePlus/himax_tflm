@@ -21,6 +21,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/tensor_ctypes.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
 
@@ -53,9 +54,8 @@ TfLiteStatus EnsureEq(TfLiteContext* context, const TfLiteIntArray* array,
     case kTfLiteInt64:
       return EnsureEqImpl<int64_t>(context, array, tensor);
     default:
-      TF_LITE_KERNEL_LOG(context,
-                         "cannot compare int array to tensor of type %d.",
-                         tensor->type);
+      MicroPrintf("cannot compare int array to tensor of type %d.",
+                  tensor->type);
       return kTfLiteError;
   }
 }
@@ -65,14 +65,18 @@ constexpr int kValueTensor = 1;
 constexpr int kOutputTensor = 0;
 
 TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+  MicroContext* micro_context = GetMicroContext(context);
+
   // Ensure inputs and outputs exist.
-  const TfLiteTensor* dims;
-  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kDimsTensor, &dims));
-  const TfLiteTensor* value;
-  TF_LITE_ENSURE_OK(context, GetInputSafe(context, node, kValueTensor, &value));
-  TfLiteTensor* output;
-  TF_LITE_ENSURE_OK(context,
-                    GetOutputSafe(context, node, kOutputTensor, &output));
+  TfLiteTensor* dims =
+      micro_context->AllocateTempInputTensor(node, kDimsTensor);
+  TF_LITE_ENSURE(context, dims != nullptr);
+  TfLiteTensor* value =
+      micro_context->AllocateTempInputTensor(node, kValueTensor);
+  TF_LITE_ENSURE(context, value != nullptr);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kOutputTensor);
+  TF_LITE_ENSURE(context, output != nullptr);
 
   // The value tensor must be a scalar.
   TF_LITE_ENSURE_EQ(context, NumDimensions(value), 0);
@@ -90,6 +94,9 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
     TF_LITE_ENSURE_OK(context, EnsureEq(context, output->dims, dims));
   }
 
+  micro_context->DeallocateTempTfLiteTensor(dims);
+  micro_context->DeallocateTempTfLiteTensor(value);
+  micro_context->DeallocateTempTfLiteTensor(output);
   return kTfLiteOk;
 }
 
@@ -116,9 +123,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       FillImpl<int8_t>(value, output);
       break;
     default:
-      TF_LITE_KERNEL_LOG(
-          context, "Fill only currently supports float32 for input 1, got %d.",
-          TfLiteTypeGetName(value->type));
+      MicroPrintf("Fill only currently supports float32 for input 1, got %d.",
+                  TfLiteTypeGetName(value->type));
       return kTfLiteError;
   }
 
@@ -128,14 +134,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace
 
 TfLiteRegistration Register_FILL() {
-  return {/*init=*/nullptr,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(nullptr, Prepare, Eval);
 }
 
 }  // namespace tflite

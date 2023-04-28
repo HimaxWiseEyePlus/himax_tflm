@@ -20,6 +20,7 @@ limitations under the License.
 #include "tensorflow/lite/kernels/internal/types.h"
 #include "tensorflow/lite/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
+#include "tensorflow/lite/micro/micro_log.h"
 #include "tensorflow/lite/micro/micro_utils.h"
 
 namespace tflite {
@@ -31,21 +32,27 @@ constexpr int kInputTensor2 = 1;
 constexpr int kOutputTensor = 0;
 
 TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteNode* node) {
+  MicroContext* micro_context = GetMicroContext(context);
+
   TF_LITE_ENSURE_EQ(context, NumInputs(node), 2);
   TF_LITE_ENSURE_EQ(context, NumOutputs(node), 1);
 
-  const TfLiteTensor* input1;
-  TF_LITE_ENSURE_OK(context,
-                    GetInputSafe(context, node, kInputTensor1, &input1));
-  const TfLiteTensor* input2;
-  TF_LITE_ENSURE_OK(context,
-                    GetInputSafe(context, node, kInputTensor2, &input2));
-  TfLiteTensor* output;
-  TF_LITE_ENSURE_OK(context,
-                    GetOutputSafe(context, node, kOutputTensor, &output));
+  TfLiteTensor* input1 =
+      micro_context->AllocateTempInputTensor(node, kInputTensor1);
+  TF_LITE_ENSURE(context, input1 != nullptr);
+  TfLiteTensor* input2 =
+      micro_context->AllocateTempInputTensor(node, kInputTensor2);
+  TF_LITE_ENSURE(context, input2 != nullptr);
+  TfLiteTensor* output =
+      micro_context->AllocateTempOutputTensor(node, kOutputTensor);
+  TF_LITE_ENSURE(context, output != nullptr);
 
   TF_LITE_ENSURE_TYPES_EQ(context, input1->type, input2->type);
   TF_LITE_ENSURE_TYPES_EQ(context, input1->type, output->type);
+
+  micro_context->DeallocateTempTfLiteTensor(input1);
+  micro_context->DeallocateTempTfLiteTensor(input2);
+  micro_context->DeallocateTempTfLiteTensor(output);
 
   return kTfLiteOk;
 }
@@ -68,7 +75,7 @@ TfLiteStatus EvalFloorDiv(TfLiteContext* context,
   // Validate the denominator.
   for (int i = 0; i < tflite::ElementCount(*input2->dims); ++i) {
     if (std::equal_to<T>()(denominator_data[i], 0)) {
-      TF_LITE_KERNEL_LOG(context, "Division by 0");
+      MicroPrintf("Division by 0");
       return kTfLiteError;
     }
   }
@@ -107,8 +114,8 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
       return EvalFloorDiv<float>(context, input1, input2, output);
     }
     default: {
-      TF_LITE_KERNEL_LOG(context, "Type '%s' is not supported by FLOOR_DIV.",
-                         TfLiteTypeGetName(input1->type));
+      MicroPrintf("Type '%s' is not supported by FLOOR_DIV.",
+                  TfLiteTypeGetName(input1->type));
       return kTfLiteError;
     }
   }
@@ -117,14 +124,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
 }  // namespace
 
 TfLiteRegistration Register_FLOOR_DIV() {
-  return {/*init=*/Init,
-          /*free=*/nullptr,
-          /*prepare=*/Prepare,
-          /*invoke=*/Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(Init, Prepare, Eval);
 }
 
 }  // namespace tflite

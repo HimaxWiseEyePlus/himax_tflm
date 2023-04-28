@@ -19,22 +19,12 @@ limitations under the License.
 
 #include "tensorflow/lite/core/api/error_reporter.h"
 #include "tensorflow/lite/micro/compatibility.h"
-
-#if !defined(TF_LITE_STRIP_ERROR_STRINGS)
-// This function can be used independent of the MicroErrorReporter to get
-// printf-like functionalitys and are common to all target platforms.
-void MicroPrintf(const char* format, ...);
-#else
-// We use a #define to ensure that the strings are completely stripped, to
-// prevent an unnecessary increase in the binary size.
-#define MicroPrintf(format, ...)
-#endif
+// TODO(b/246776144): Move this include statement to the cc file.
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
-
 // Get a pointer to a singleton global error reporter.
 ErrorReporter* GetMicroErrorReporter();
-
 class MicroErrorReporter : public ErrorReporter {
  public:
   ~MicroErrorReporter() override {}

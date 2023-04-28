@@ -33,11 +33,9 @@ limitations under the License.
 #include "tensorflow/lite/micro/kernels/arc_mli/scratch_buffers.h"
 #include "tensorflow/lite/micro/kernels/kernel_util.h"
 #include "tensorflow/lite/micro/memory_helpers.h"
+#include "tensorflow/lite/micro/micro_log.h"
 
 namespace tflite {
-namespace ops {
-namespace micro {
-namespace add {
 
 constexpr int kInputTensor1 = 0;
 constexpr int kInputTensor2 = 1;
@@ -164,7 +162,7 @@ TfLiteStatus CalculateOpData(TfLiteContext* context, TfLiteAddParams* params,
     CalculateActivationRange(params->activation,
                              &data->output_activation_min_f32,
                              &data->output_activation_max_f32);
-#endif  //#if !defined(TF_LITE_STRIP_REFERENCE_IMPL)
+#endif  // !defined(TF_LITE_STRIP_REFERENCE_IMPL)
   }
 
   return kTfLiteOk;
@@ -196,8 +194,7 @@ TfLiteStatus EvalAdd(TfLiteContext* context, TfLiteNode* node,
   }
   return kTfLiteOk;
 #else
-  TF_LITE_KERNEL_LOG(context,
-                     "Node configuration is not supported by ARC MLI Library.");
+  MicroPrintf("Node configuration is not supported by ARC MLI Library.");
   return kTfLiteError;
 #endif
 }
@@ -267,15 +264,14 @@ TfLiteStatus EvalAddQuantized(TfLiteContext* context, TfLiteNode* node,
       break;
     }
     default:
-      TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                         TfLiteTypeGetName(output->type), output->type);
+      MicroPrintf("Type %s (%d) not supported.",
+                  TfLiteTypeGetName(output->type), output->type);
       return kTfLiteError;
   }
 
   return kTfLiteOk;
 #else
-  TF_LITE_KERNEL_LOG(context,
-                     "Node configuration is not supported by ARC MLI Library.");
+  MicroPrintf("Node configuration is not supported by ARC MLI Library.");
   return kTfLiteError;
 #endif
 }
@@ -358,20 +354,24 @@ TfLiteStatus EvalMLIAddInt8(TfLiteContext* context, TfLiteNode* node,
 #endif
 }
 
-void* Init(TfLiteContext* context, const char* buffer, size_t length) {
+void* AddInit(TfLiteContext* context, const char* buffer, size_t length) {
   TFLITE_DCHECK(context->AllocatePersistentBuffer != nullptr);
   return context->AllocatePersistentBuffer(context, sizeof(OpData));
 }
 
-TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus AddPrepare(TfLiteContext* context, TfLiteNode* node) {
   TFLITE_DCHECK(node->user_data != nullptr);
   TFLITE_DCHECK(node->builtin_data != nullptr);
 
-  const TfLiteTensor* input1 = GetInput(context, node, kInputTensor1);
+  MicroContext* micro_context = GetMicroContext(context);
+
+  TfLiteTensor* input1 =
+      micro_context->AllocateTempInputTensor(node, kInputTensor1);
   TF_LITE_ENSURE(context, input1 != nullptr);
-  const TfLiteTensor* input2 = GetInput(context, node, kInputTensor2);
+  TfLiteTensor* input2 =
+      micro_context->AllocateTempInputTensor(node, kInputTensor2);
   TF_LITE_ENSURE(context, input2 != nullptr);
-  TfLiteTensor* output = GetOutput(context, node, kOutputTensor);
+  TfLiteTensor* output = AllocateTempOutputTensor(node, kOutputTensor);
   TF_LITE_ENSURE(context, output != nullptr);
 
   OpData* data = static_cast<OpData*>(node->user_data);
@@ -380,10 +380,14 @@ TfLiteStatus Prepare(TfLiteContext* context, TfLiteNode* node) {
   TF_LITE_ENSURE_STATUS(
       CalculateOpData(context, params, input1, input2, output, data));
 
+  micro_context->DeallocateTempTfLiteTensor(input1);
+  micro_context->DeallocateTempTfLiteTensor(input2);
+  micro_context->DeallocateTempTfLiteTensor(output);
+
   return kTfLiteOk;
 }
 
-TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
+TfLiteStatus AddEval(TfLiteContext* context, TfLiteNode* node) {
   TfLiteStatus ret_val = kTfLiteOk;
   auto* params = reinterpret_cast<TfLiteAddParams*>(node->builtin_data);
 
@@ -405,27 +409,16 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
     ret_val =
         EvalAddQuantized(context, node, params, data, input1, input2, output);
   } else {
-    TF_LITE_KERNEL_LOG(context, "Type %s (%d) not supported.",
-                       TfLiteTypeGetName(output->type), output->type);
+    MicroPrintf("Type %s (%d) not supported.", TfLiteTypeGetName(output->type),
+                output->type);
     ret_val = kTfLiteError;
   }
 
   return ret_val;
 }
 
-}  // namespace add
-}  // namespace micro
-}  // namespace ops
 TfLiteRegistration Register_ADD() {
-  return {/*init=*/ops::micro::add::Init,
-          /*free=*/nullptr,
-          /*prepare=*/ops::micro::add::Prepare,
-          /*invoke=*/ops::micro::add::Eval,
-          /*profiling_string=*/nullptr,
-          /*builtin_code=*/0,
-          /*custom_name=*/nullptr,
-          /*version=*/0};
+  return tflite::micro::RegisterOp(AddInit, AddPrepare, AddEval);
 }
-
 
 }  // namespace tflite
